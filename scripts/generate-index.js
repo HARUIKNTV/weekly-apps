@@ -87,7 +87,11 @@ function adSlot(sizeLabel, extraClass) {
       </div>`;
 }
 
+const SITE_URL = "https://haruikntv.github.io/weekly-apps/";
 const sorted = history.slice().reverse();
+const description = history.length
+  ? `毎週金曜21:00に公開される、ランダムジャンルの小さなアプリ一覧サイト。現在${history.length}本のミニアプリを公開中。`
+  : "毎週金曜21:00に、ランダムジャンルの小さなアプリを自動生成・公開しているミニアプリ一覧サイト。";
 
 const cardsHtml = sorted
   .map((app, i) => {
@@ -101,7 +105,7 @@ const cardsHtml = sorted
         <img class="thumb" src="${thumbnailDataUri(app.name || "", app.genre || "")}" alt="${escapeHtml(app.name)}のサムネイル" />
         <div class="card-body">
           <span class="genre-pill">${emoji} ${escapeHtml(app.genre)}</span>
-          <h2>${escapeHtml(app.name)}</h2>
+          <h3>${escapeHtml(app.name)}</h3>
           <p class="desc">${escapeHtml(app.description || "")}</p>
           <p class="date">🗓️ ${escapeHtml(app.date)}</p>
           <span class="play-btn">あそんでみる ▶</span>
@@ -127,6 +131,46 @@ const html = `<!doctype html>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Weekly Apps 博覧会</title>
+<meta name="description" content="${escapeHtml(description)}" />
+<link rel="canonical" href="${SITE_URL}" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Weekly Apps 博覧会" />
+<meta property="og:title" content="Weekly Apps 博覧会" />
+<meta property="og:description" content="${escapeHtml(description)}" />
+<meta property="og:url" content="${SITE_URL}" />
+<meta property="og:image" content="${SITE_URL}og-image.svg" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Weekly Apps 博覧会" />
+<meta name="twitter:description" content="${escapeHtml(description)}" />
+<meta name="twitter:image" content="${SITE_URL}og-image.svg" />
+<script type="application/ld+json">
+${JSON.stringify(
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Weekly Apps 博覧会",
+    description,
+    url: SITE_URL,
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: sorted.map((app, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        item: {
+          "@type": "SoftwareApplication",
+          name: app.name,
+          description: app.description || "",
+          url: SITE_URL + path.basename(app.folder || "") + "/",
+          applicationCategory: app.genre,
+          operatingSystem: "Web",
+        },
+      })),
+    },
+  },
+  null,
+  2
+)}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Yusei+Magic&display=swap" rel="stylesheet">
@@ -281,7 +325,7 @@ const html = `<!doctype html>
     border-radius: 999px;
     margin-bottom: 6px;
   }
-  .card h2 {
+  .card h3 {
     font-family: 'Mochiy Pop One', sans-serif;
     font-size: 17px;
     margin: 2px 0 6px;
@@ -330,7 +374,7 @@ const html = `<!doctype html>
   ${adSlot("728 x 90", "ad-leaderboard")}
 
   <main>
-    <p class="section-title">🆕 新着アプリ一覧 🆕</p>
+    <h2 class="section-title">🆕 新着アプリ一覧 🆕</h2>
     ${history.length ? `<div class="grid">${cardsHtml}</div>` : emptyState}
   </main>
 
@@ -345,6 +389,34 @@ const html = `<!doctype html>
 </html>
 `;
 
-fs.mkdirSync(path.join(__dirname, "..", "site"), { recursive: true });
-fs.writeFileSync(path.join(__dirname, "..", "site", "index.html"), html);
-console.log(`Generated index.html with ${history.length} app(s).`);
+const siteDir = path.join(__dirname, "..", "site");
+fs.mkdirSync(siteDir, { recursive: true });
+fs.writeFileSync(path.join(siteDir, "index.html"), html);
+
+// ---- sitemap.xml: index page + one <url> per app ----
+const urls = [SITE_URL, ...sorted.map((app) => SITE_URL + path.basename(app.folder || "") + "/")];
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map((u) => `  <url><loc>${u}</loc></url>`).join("\n")}
+</urlset>
+`;
+fs.writeFileSync(path.join(siteDir, "sitemap.xml"), sitemap);
+
+// ---- llms.txt: plain-language index of every app, for LLM/AI-answer-engine crawlers ----
+const llmsTxt = `# Weekly Apps 博覧会
+
+> ${description}
+
+## Apps
+${sorted.length
+  ? sorted
+      .map((app) => `- [${app.name}](${SITE_URL}${path.basename(app.folder || "")}/): ${app.description || ""} (ジャンル: ${app.genre}, 公開日: ${app.date})`)
+      .join("\n")
+  : "- (まだ公開されているアプリはありません。毎週金曜21:00に追加されます。)"}
+`;
+fs.writeFileSync(path.join(siteDir, "llms.txt"), llmsTxt);
+
+// ---- static OG image asset ----
+fs.copyFileSync(path.join(__dirname, "..", "assets", "og-image.svg"), path.join(siteDir, "og-image.svg"));
+
+console.log(`Generated index.html, sitemap.xml, llms.txt with ${history.length} app(s).`);

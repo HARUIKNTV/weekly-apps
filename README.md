@@ -20,8 +20,22 @@ Publishing to the Apple App Store requires an Apple Developer Program membership
 
 - `manifest.json` — genre pool + history of every app built so far (name, genre, date, folder, description).
 - `apps/<date>-<slug>/` — one Expo project per week.
-- `scripts/generate-index.js` — builds the `site/index.html` landing page listing all apps (fairground-style: thumbnails, "NEW!!" ribbon on the latest app, genre pills, ad-slot placeholders), run by CI.
+- `assets/og-image.svg` — static Open Graph/Twitter Card image for the site, copied into `site/` on every build.
+- `scripts/generate-index.js` — builds `site/index.html` (fairground-style listing: thumbnails, "NEW!!" ribbon, genre pills, ad-slot placeholders, meta description/OGP/Twitter Card tags, JSON-LD `CollectionPage`+`ItemList` structured data), `site/sitemap.xml`, and `site/llms.txt` — all regenerated from `manifest.json` on every CI run, so they can never drift out of date.
 - `.github/workflows/deploy-pages.yml` — builds every app for web and deploys to GitHub Pages on every push to `main`.
+
+## SEO / AIO（AI検索・AI回答エンジン向け最適化）
+
+このサイトは**技術的な土台を作り込んで、あとは自動で最新に保たれる**方針にしています。`manifest.json`にアプリが追加されるたびにCIが以下をすべて再生成するので、手動でのSEOメンテナンスは基本的に不要です。
+
+- **メタタグ**: description / canonical / OGP / Twitter Card（`generate-index.js`が生成）
+- **構造化データ**: `CollectionPage` + `ItemList`（各アプリを`SoftwareApplication`として記述）のJSON-LD
+- **サイトマップ**: `site/sitemap.xml`（トップページ＋全アプリページ）。ルートの [haruikntv.github.io/robots.txt](https://haruikntv.github.io/robots.txt) から参照されている
+- **llms.txt**: `site/llms.txt`。AI検索・回答エンジン（ChatGPT, Claude, Perplexity等）がこのサイトの内容を平文で把握できるよう、全アプリの一覧をMarkdownで書き出す（[llms.txt仕様](https://llmstxt.org/)に準拠）
+- **AIクローラーの許可**: ルートリポジトリの`robots.txt`でGPTBot・ClaudeBot・Google-Extended・PerplexityBot等を明示的に許可（AIO＝AI回答エンジンからの発見されやすさを優先し、ブロックしていない）
+- **見出し階層**: `<h1>`サイトタイトル → `<h2>`セクション見出し → `<h3>`各アプリ名、の順で意味的に正しく構成
+
+新しいアプリを追加する週次ルーティンでは、Expoの`app.json`に各アプリの`name`/`description`を具体的に設定することで、個別アプリページ側の`<title>`やメタディスクリプションも意味のある内容にするようにしている（Expoのデフォルトのままにしない）。
 
 ## 広告の設置について
 
