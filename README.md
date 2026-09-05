@@ -20,8 +20,18 @@ Publishing to the Apple App Store requires an Apple Developer Program membership
 
 - `manifest.json` — genre pool + history of every app built so far (name, genre, date, folder, description).
 - `apps/<date>-<slug>/` — one Expo project per week.
-- `scripts/generate-index.js` — builds the `site/index.html` landing page listing all apps, run by CI.
+- `scripts/generate-index.js` — builds the `site/index.html` landing page listing all apps (fairground-style: thumbnails, "NEW!!" ribbon on the latest app, genre pills, ad-slot placeholders), run by CI.
 - `.github/workflows/deploy-pages.yml` — builds every app for web and deploys to GitHub Pages on every push to `main`.
+
+## 広告の設置について
+
+`generate-index.js` はページ内に空の広告枠（`.ad-slot`）を3か所用意しています：ヘッダー直下（728×90）、アプリグリッド内（新着アプリ6件ごとに300×250のカードとして挿入）、フッター上（728×90）。今はプレースホルダー表示のみで、実際の広告は出ていません。
+
+収益化するには：
+
+1. 自分で広告ネットワーク（例: [Google AdSense](https://adsense.google.com/)）に登録し、サイト審査を通す。**これは本人確認・銀行口座・税務情報の入力が必要なため、Claudeが代行することはできません。**
+2. 発行された広告コード（例: `<ins class="adsbygoogle">...` と `<script>` の読み込みタグ）を教えてもらえれば、`scripts/generate-index.js` の `adSlot()` 関数内、コメント `<!-- AdSense/other ad network snippet goes here -->` の位置に埋め込む。
+3. AdSenseは「十分なオリジナルコンテンツ」がないと審査に通らないことが多いので、アプリが数本公開されてから申請するのがおすすめ。
 
 ## Notes for whoever (or whatever) picks this up later
 
