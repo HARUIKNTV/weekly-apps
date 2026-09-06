@@ -8,15 +8,6 @@ const history = manifest.history || [];
 const SITE_NAME = "スロ設定判別ラボ";
 const SITE_URL = "https://haruikntv.github.io/weekly-apps/";
 
-// ---- deterministic "random" look per tool, based on its name ----
-function hashString(s) {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) {
-    h = (h * 31 + s.charCodeAt(i)) | 0;
-  }
-  return Math.abs(h);
-}
-
 function escapeHtml(s) {
   return String(s || "").replace(/[&<>"']/g, (c) => ({
     "&": "&amp;",
@@ -25,30 +16,6 @@ function escapeHtml(s) {
     '"': "&quot;",
     "'": "&#39;",
   }[c]));
-}
-
-// A handful of slot-flavored icons, picked deterministically per tool for a bit of variety.
-const ICONS = ["🎰", "🔔", "7️⃣", "🍒", "💰"];
-
-function thumbnailDataUri(name) {
-  const hash = hashString(name);
-  const hue = 350 + (hash % 20) - 10; // stays in the red/crimson band
-  const hue2 = 40 + (hash % 15); // gold band
-  const icon = ICONS[hash % ICONS.length];
-  const rotateIcon = (hash % 16) - 8;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 220">
-    <defs>
-      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="hsl(${hue},55%,14%)"/>
-        <stop offset="100%" stop-color="hsl(${hue2},70%,20%)"/>
-      </linearGradient>
-    </defs>
-    <rect width="300" height="220" fill="url(#g)"/>
-    <circle cx="${40 + (hash % 40)}" cy="${30 + (hash % 20)}" r="${18 + (hash % 14)}" fill="#ffd77a" opacity="0.10"/>
-    <circle cx="${250 - (hash % 50)}" cy="${180 - (hash % 30)}" r="${26 + (hash % 20)}" fill="#ff4d5e" opacity="0.10"/>
-    <text x="150" y="128" font-size="86" text-anchor="middle" transform="rotate(${rotateIcon} 150 110)">${icon}</text>
-  </svg>`;
-  return "data:image/svg+xml;base64," + Buffer.from(svg).toString("base64");
 }
 
 // ---- ad slot markup (empty placeholders — wire up a real network later, see README) ----
@@ -68,28 +35,12 @@ const description = history.length
   ? `パチスロの公開設定差データをもとにした設定判別ツール集。現在${history.length}機種のツールを公開中。`
   : "パチスロの公開設定差データをもとに、機種ごとの設定判別ツールを毎週追加していくサイトです。";
 
-const cardsHtml = sorted
+const pillsHtml = sorted
   .map((app, i) => {
     const folderName = path.basename(app.folder || "");
-    const rotation = ((hashString(app.name || "") % 5) - 2) + "deg";
     const isNew = i === 0;
-    const card = `
-      <a class="card" style="--tilt: ${rotation}" href="./${folderName}/">
-        ${isNew ? '<span class="ribbon">NEW</span>' : ""}
-        <img class="thumb" src="${thumbnailDataUri(app.name || "")}" alt="${escapeHtml(app.name)}のサムネイル" />
-        <div class="card-body">
-          <span class="genre-pill">${escapeHtml(app.genre)}</span>
-          <h3>${escapeHtml(app.name)}</h3>
-          <p class="desc">${escapeHtml(app.description || "")}</p>
-          <p class="date">公開日: ${escapeHtml(app.date)}</p>
-          <span class="play-btn">ツールを使う ▶</span>
-        </div>
-      </a>`;
-    // Drop in an in-grid ad card every 6 tools, styled to match the card grid.
-    if (i > 0 && i % 6 === 0) {
-      return adSlot("300 x 250", "ad-card") + card;
-    }
-    return card;
+    const searchKey = escapeHtml((app.name || "").toLowerCase());
+    return `<a class="pill" href="./${folderName}/" data-name="${searchKey}">${isNew ? '<span class="pill-new">NEW</span>' : ""}${escapeHtml(app.name)}</a>`;
   })
   .join("\n");
 
@@ -235,20 +186,15 @@ ${JSON.stringify(
   .ad-slot-size { display: block; font-size: 11px; opacity: 0.7; }
   .ad-leaderboard { max-width: 728px; height: 90px; }
   .ad-footer { max-width: 728px; height: 90px; }
-  .ad-card {
-    grid-column: span 1;
-    height: 260px;
-    transform: none !important;
-  }
 
-  /* ---------- grid ---------- */
-  main { max-width: 1100px; margin: 0 auto; padding: 8px 16px 60px; }
+  /* ---------- list ---------- */
+  main { max-width: 900px; margin: 0 auto; padding: 8px 16px 60px; }
   .section-title {
     text-align: center;
     font-size: clamp(18px, 4vw, 26px);
     font-weight: 700;
     color: var(--ink);
-    margin: 22px 0 22px;
+    margin: 22px 0 18px;
   }
   .section-title::before,
   .section-title::after {
@@ -258,71 +204,49 @@ ${JSON.stringify(
     font-size: 14px;
     vertical-align: middle;
   }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 22px;
-  }
-  .card {
-    position: relative;
+
+  .search-box {
     display: block;
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto 24px;
     background: var(--card-bg);
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: 999px;
+    padding: 11px 18px;
+    color: var(--ink);
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .search-box::placeholder { color: var(--sub); }
+  .search-box:focus { outline: 2px solid var(--accent2); outline-offset: 1px; }
+
+  .pill-list { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .pill {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 700;
     text-decoration: none;
-    transform: rotate(var(--tilt, 0deg));
-    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-    overflow: hidden;
+    transition: border-color 0.15s ease, transform 0.15s ease;
   }
-  .card:hover {
-    transform: rotate(0deg) translateY(-3px);
-    border-color: var(--accent2);
-    box-shadow: 0 10px 24px rgba(0,0,0,0.45);
-  }
-  .thumb { display: block; width: 100%; height: 150px; object-fit: cover; border-bottom: 1px solid var(--line); }
-  .card-body { padding: 14px 16px 18px; }
-  .ribbon {
-    position: absolute;
-    top: 10px;
-    right: -30px;
+  .pill:hover { border-color: var(--accent2); transform: translateY(-2px); }
+  .pill-new {
     background: var(--accent);
     color: #fff;
+    font-size: 10px;
     font-weight: 700;
-    font-size: 11px;
     letter-spacing: 0.05em;
-    padding: 4px 36px;
-    transform: rotate(30deg);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.35);
-    z-index: 3;
-  }
-  .genre-pill {
-    display: inline-block;
-    background: var(--bg2);
-    color: var(--accent2);
-    border: 1px solid var(--line);
-    font-size: 11px;
-    padding: 3px 10px;
-    border-radius: 999px;
-    margin-bottom: 8px;
-  }
-  .card h3 {
-    font-size: 16.5px;
-    font-weight: 700;
-    margin: 2px 0 6px;
-    line-height: 1.35;
-  }
-  .desc { font-size: 13px; line-height: 1.55; margin: 0 0 10px; color: var(--sub); }
-  .date { font-size: 11px; color: var(--sub); margin: 0 0 12px; }
-  .play-btn {
-    display: inline-block;
-    background: linear-gradient(90deg, var(--accent), #a80d26);
-    color: #fff;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 7px 16px;
+    padding: 2px 7px;
     border-radius: 999px;
   }
+  .no-results { text-align: center; color: var(--sub); font-size: 13px; padding: 30px 0; display: none; }
 
   .empty-state {
     text-align: center;
@@ -354,7 +278,11 @@ ${JSON.stringify(
 
   <main>
     <h2 class="section-title">判別ツール一覧</h2>
-    ${history.length ? `<div class="grid">${cardsHtml}</div>` : emptyState}
+    ${history.length
+      ? `<input type="search" class="search-box" id="searchBox" placeholder="機種名で検索..." />
+    <div class="pill-list" id="pillList">${pillsHtml}</div>
+    <p class="no-results" id="noResults">該当する機種が見つかりませんでした。</p>`
+      : emptyState}
   </main>
 
   ${adSlot("728 x 90", "ad-footer")}
@@ -364,6 +292,21 @@ ${JSON.stringify(
     <a href="https://github.com/HARUIKNTV/weekly-apps">GitHubリポジトリ</a></p>
   </footer>
 
+<script>
+  const searchBox = document.getElementById('searchBox');
+  const pills = document.querySelectorAll('#pillList .pill');
+  const noResults = document.getElementById('noResults');
+  searchBox && searchBox.addEventListener('input', () => {
+    const q = searchBox.value.trim().toLowerCase();
+    let visibleCount = 0;
+    pills.forEach((pill) => {
+      const match = pill.dataset.name.includes(q);
+      pill.style.display = match ? '' : 'none';
+      if (match) visibleCount++;
+    });
+    noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+  });
+</script>
 </body>
 </html>
 `;

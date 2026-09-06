@@ -26,7 +26,7 @@ App Store公開には年間$99のApple Developer Program登録が必要で無料
 - `manifest.json` — 候補機種リスト（`machine_candidates`）と、公開済みツールの履歴（`history`: name, genre=機種名, date, folder, description）。
 - `apps/<date>-<slug>/` — 機種ごとの判別ツール（プレーンなHTML/CSS/JS、ビルド不要）。
 - `assets/og-image.svg` — サイト共通のOGP/Twitter Card画像。
-- `scripts/generate-index.js` — `site/index.html`（ツール一覧）、`site/sitemap.xml`、`site/llms.txt`を`manifest.json`から自動生成。CIで毎回実行される。
+- `scripts/generate-index.js` — `site/index.html`（ツール一覧。機種名だけのシンプルなピル型リスト＋検索ボックス。今後ツール数が増える前提でサムネイル・説明文は表示しない）、`site/sitemap.xml`、`site/llms.txt`を`manifest.json`から自動生成。CIで毎回実行される。
 - `.github/workflows/deploy-pages.yml` — `package.json`があるフォルダはExpoとしてビルド、`index.html`のみのフォルダはそのままコピーしてGitHub Pagesにデプロイ。
 
 ## SEO / AIO
@@ -35,12 +35,12 @@ App Store公開には年間$99のApple Developer Program登録が必要で無料
 
 ## 広告の設置について
 
-`generate-index.js`はページ内に空の広告枠（`.ad-slot`）を3か所用意している：ヘッダー直下（728×90）、ツールグリッド内（6件ごとに300×250のカードとして挿入）、フッター上（728×90）。今はプレースホルダー表示のみ。
+一覧ページ（`generate-index.js`が生成、ヘッダー直下とフッター上の728×90）と、各判別ツールページ（ヘッダー直下728×90、判別要素と結果の間300×250、フッター上728×90）の両方に空の広告枠（`.ad-slot`）を用意している。今はプレースホルダー表示のみ。
 
 収益化するには：
 
 1. 自分で広告ネットワーク（例: [Google AdSense](https://adsense.google.com/)）に登録し、サイト審査を通す。**本人確認・銀行口座・税務情報の入力が必要なため、Claudeが代行することはできない。**
-2. 発行された広告コードを教えてもらえれば、`scripts/generate-index.js`の`adSlot()`関数内、コメント`<!-- AdSense/other ad network snippet goes here -->`の位置に埋め込む。
+2. 発行された広告コードを教えてもらえれば、`scripts/generate-index.js`の`adSlot()`関数、および各ツールの`index.html`内のコメント`<!-- AdSense/other ad network snippet goes here -->`の位置に埋め込む。
 
 ## 免責事項
 
