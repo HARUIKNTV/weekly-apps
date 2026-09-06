@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>スマスロ東京喰種 設定判別ツール</title>
-<meta name="description" content="スマスロ「L 東京喰種」の設定判別ツール。CZ・裏AT関連の数値データと、DMMぱちタウンの設定判別・推測ポイントに基づく示唆演出の出現回数から設定期待度を算出します。" />
+<meta name="description" content="スマスロ「L 東京喰種」の設定判別ツール。CZ・下段リプレイ・AT直撃・裏AT・AT引き戻しなど数値データを細かく分けて入力でき、DMMぱちタウンの設定判別・推測ポイントに基づく示唆演出の出現回数と合わせて設定期待度を算出します。" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
@@ -234,7 +234,7 @@
     <h2>① 数値データ</h2>
     <p class="hint">わかる範囲で入力するほど精度が上がります。空欄（0）の項目は計算に影響しません。</p>
 
-    <div class="field-group-label">CZ・エピソードボーナス</div>
+    <div class="field-group-label">CZ・エピソードボーナス（総G数ベース）</div>
     <div class="field-row">
       <label class="field">総G数
         <input type="number" id="totalG" min="0" placeholder="例: 1500" />
@@ -245,9 +245,52 @@
       <label class="field">大喰いの利世当選回数
         <input type="number" id="oogui" min="0" placeholder="例: 1" />
       </label>
+      <label class="field">エピソードボーナス当選回数
+        <input type="number" id="episodeBonus" min="0" placeholder="例: 0" />
+      </label>
     </div>
 
-    <div class="field-group-label">裏AT関連</div>
+    <div class="field-group-label">下段リプレイ・AT直撃（総G数は上と共通）</div>
+    <div class="field-row">
+      <label class="field">下段リプレイ成立回数
+        <input type="number" id="replayK" min="0" placeholder="例: 1" />
+      </label>
+      <label class="field">AT直撃当選回数
+        <input type="number" id="atChokugekiK" min="0" placeholder="例: 0" />
+      </label>
+    </div>
+
+    <div class="field-group-label">弱チェリー契機のCZ当選率（通常滞在時）</div>
+    <div class="field-row">
+      <label class="field">通常滞在時の弱チェリー成立回数
+        <input type="number" id="weakCherryNormalN" min="0" placeholder="例: 20" />
+      </label>
+      <label class="field">うちCZ以上当選回数
+        <input type="number" id="weakCherryNormalK" min="0" placeholder="例: 0" />
+      </label>
+    </div>
+
+    <div class="field-group-label">弱チェリー契機のCZ当選率（高確滞在時）</div>
+    <div class="field-row">
+      <label class="field">高確滞在時の弱チェリー成立回数
+        <input type="number" id="weakCherryKakuN" min="0" placeholder="例: 5" />
+      </label>
+      <label class="field">うちCZ以上当選回数
+        <input type="number" id="weakCherryKakuK" min="0" placeholder="例: 0" />
+      </label>
+    </div>
+
+    <div class="field-group-label">規定ゲーム数によるCZ当選率（100G以内）</div>
+    <div class="field-row">
+      <label class="field">100Gに到達した回数
+        <input type="number" id="reach100N" min="0" placeholder="例: 6" />
+      </label>
+      <label class="field">うちCZ以上当選回数（100G以内）
+        <input type="number" id="reach100K" min="0" placeholder="例: 1" />
+      </label>
+    </div>
+
+    <div class="field-group-label">裏AT突入率（直行・有馬J非経由）</div>
     <div class="field-row">
       <label class="field">有馬J非経由のAT当選回数
         <input type="number" id="uraAtN" min="0" placeholder="例: 10" />
@@ -256,7 +299,9 @@
         <input type="number" id="uraAtK" min="0" placeholder="例: 1" />
       </label>
     </div>
-    <div class="field-row" style="margin-top:8px">
+
+    <div class="field-group-label">ゲーム数契機の裏AT当選率（100G以内）</div>
+    <div class="field-row">
       <label class="field">100G以内のゲーム数契機AT当選回数
         <input type="number" id="ura100N" min="0" placeholder="例: 5" />
       </label>
@@ -264,12 +309,24 @@
         <input type="number" id="ura100K" min="0" placeholder="例: 1" />
       </label>
     </div>
-    <div class="field-row" style="margin-top:8px">
+
+    <div class="field-group-label">ゲーム数契機の裏AT当選率（200G以内）</div>
+    <div class="field-row">
       <label class="field">200G以内のゲーム数契機AT当選回数
         <input type="number" id="ura200N" min="0" placeholder="例: 8" />
       </label>
       <label class="field">うち裏AT当選回数
         <input type="number" id="ura200K" min="0" placeholder="例: 1" />
+      </label>
+    </div>
+
+    <div class="field-group-label">AT引き戻し当選率</div>
+    <div class="field-row">
+      <label class="field">AT終了回数（有馬Jジャッジ失敗後を除く）
+        <input type="number" id="atEndN" min="0" placeholder="例: 6" />
+      </label>
+      <label class="field">うち引き戻し当選回数
+        <input type="number" id="hikimodoshiK" min="0" placeholder="例: 1" />
       </label>
     </div>
   </div>
@@ -295,7 +352,7 @@
   </div>
 
   <p class="source">
-    参考データ: <a href="https://p-town.dmm.com/machines/4742#anc-point" target="_blank" rel="noopener">DMMぱちタウン「L 東京喰種」設定判別・推測ポイント</a>（2026/09/05更新）／
+    参考データ: <a href="https://p-town.dmm.com/machines/4742#anc-point" target="_blank" rel="noopener">DMMぱちタウン「L 東京喰種」設定判別・推測ポイント</a>（2026/09/06更新）／
     <a href="https://1geki.jp/slot/l_tokyoghoul/0/" target="_blank" rel="noopener">一撃「東京グール」設定差・設定判別・終了画面</a>（2026/08/03更新）
   </p>
 
@@ -321,9 +378,16 @@
 // per-setting probability — DMMぱちタウン「設定判別・推測ポイント」各表より
 const P_REMINISCENCE = [1/300.5, 1/295.1, 1/287.6, 1/276.7, 1/262.7, 1/251.2]; // CZとエピソードボーナス
 const P_OOGUI        = [1/2079.1, 1/1906.5, 1/1722.8, 1/1478.9, 1/1226.6, 1/1074.9];
+const P_EPISODE_BONUS = [1/6620.2, 1/5879.7, 1/5114.5, 1/4062.5, 1/3166.7, 1/2639.5]; // 初当りエピソードボーナス当選率
+const P_SHIMODAN_REPLAY = [1/1260.3, 1/1213.6, 1/1170.3, 1/1129.9, 1/1092.3, 1/1024.0]; // 下段リプレイ確率
+const P_AT_CHOKUGEKI  = [1/28460.6, 1/24453.5, 1/18093.0, 1/12019.5, 1/8615.4, 1/7036.8]; // AT直撃当選確率（エピソードボーナス非経由）
+const P_WEAK_CHERRY_CZ_NORMAL = [0.0027, 0.0029, 0.0031, 0.0033, 0.0038, 0.0043]; // 弱チェリー契機のCZ当選率（通常滞在時）
+const P_WEAK_CHERRY_CZ_KAKU    = [0.0059, 0.0063, 0.0069, 0.0073, 0.0083, 0.0095]; // 弱チェリー契機のCZ当選率（高確滞在時）
+const P_CZ_WITHIN_100G = [0.1958, 0.2104, 0.2315, 0.2637, 0.3196, 0.3601]; // 規定ゲーム数（100G以内）によるCZ当選率
 const P_URA_AT_CHOKKOU = [0.0110, 0.0132, 0.0163, 0.0219, 0.0285, 0.0332]; // 裏AT突入率（AT当選時・有馬J非経由）
 const P_URA_AT_100G    = [0.0318, 0.0354, 0.0393, 0.0440, 0.0485, 0.0514]; // ゲーム数当選契機の裏AT当選率（100G以内）
 const P_URA_AT_200G    = [0.0299, 0.0332, 0.0369, 0.0411, 0.0453, 0.0477]; // ゲーム数当選契機の裏AT当選率（200G以内）
+const P_AT_HIKIMODOSHI = [0.0781, 0.0781, 0.0938, 0.1094, 0.1250, 0.1523]; // AT引き戻し当選率（裏ATとは別の独立した抽選）
 
 // 判別要素 — DMMぱちタウンの分類順（終了画面系→通常時演出→エンディング→獲得枚数表示）をそのまま保持。
 // kind:'hard' は1回でも出現すれば矛盾設定をハード除外（type:'only'|'deny'）。
@@ -377,8 +441,12 @@ const TIER_WEIGHT = { weak: 0.2, normal: 0.35, strong: 0.5 }; // 示唆1回出�
 const SOFT_CAP = 3; // 同じ示唆を何度数えても、影響はこの回数分でカンスト
 
 const numericInputs = [
-  'totalG', 'reminiscence', 'oogui',
+  'totalG', 'reminiscence', 'oogui', 'episodeBonus',
+  'replayK', 'atChokugekiK',
+  'weakCherryNormalN', 'weakCherryNormalK', 'weakCherryKakuN', 'weakCherryKakuK',
+  'reach100N', 'reach100K',
   'uraAtN', 'uraAtK', 'ura100N', 'ura100K', 'ura200N', 'ura200K',
+  'atEndN', 'hikimodoshiK',
 ].map((id) => document.getElementById(id));
 const resultBars = document.getElementById('resultBars');
 const summaryEl = document.getElementById('summary');
@@ -444,10 +512,17 @@ function computeCandidateSettings() {
 }
 
 function render() {
-  const [n, k1, k2, uraAtN, uraAtK, ura100N, ura100K, ura200N, ura200K] =
-    numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
+  const [
+    n, k1, k2, episodeBonusK,
+    replayK, atChokugekiK,
+    weakCherryNormalN, weakCherryNormalK, weakCherryKakuN, weakCherryKakuK,
+    reach100N, reach100K,
+    uraAtN, uraAtK, ura100N, ura100K, ura200N, ura200K,
+    atEndN, hikimodoshiK,
+  ] = numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
   const candidates = computeCandidateSettings();
-  const hasNumericEvidence = n > 0 || uraAtN > 0 || ura100N > 0 || ura200N > 0;
+  const hasNumericEvidence = n > 0 || weakCherryNormalN > 0 || weakCherryKakuN > 0 ||
+    reach100N > 0 || uraAtN > 0 || ura100N > 0 || ura200N > 0 || atEndN > 0;
   const softItems = ITEMS.filter((item) => item.kind === 'soft');
   const hasSoftEvidence = softItems.some((item) => item.count > 0);
 
@@ -455,10 +530,19 @@ function render() {
     if (!candidates.has(s)) return -Infinity;
     const i = s - 1;
     let l = 0;
-    if (n > 0) l += logBinomLikelihood(n, k1, P_REMINISCENCE[i]) + logBinomLikelihood(n, k2, P_OOGUI[i]);
+    if (n > 0) {
+      l += logBinomLikelihood(n, k1, P_REMINISCENCE[i]) + logBinomLikelihood(n, k2, P_OOGUI[i]);
+      l += logBinomLikelihood(n, episodeBonusK, P_EPISODE_BONUS[i]);
+      l += logBinomLikelihood(n, replayK, P_SHIMODAN_REPLAY[i]);
+      l += logBinomLikelihood(n, atChokugekiK, P_AT_CHOKUGEKI[i]);
+    }
+    if (weakCherryNormalN > 0) l += logBinomLikelihood(weakCherryNormalN, weakCherryNormalK, P_WEAK_CHERRY_CZ_NORMAL[i]);
+    if (weakCherryKakuN > 0) l += logBinomLikelihood(weakCherryKakuN, weakCherryKakuK, P_WEAK_CHERRY_CZ_KAKU[i]);
+    if (reach100N > 0) l += logBinomLikelihood(reach100N, reach100K, P_CZ_WITHIN_100G[i]);
     if (uraAtN > 0) l += logBinomLikelihood(uraAtN, uraAtK, P_URA_AT_CHOKKOU[i]);
     if (ura100N > 0) l += logBinomLikelihood(ura100N, ura100K, P_URA_AT_100G[i]);
     if (ura200N > 0) l += logBinomLikelihood(ura200N, ura200K, P_URA_AT_200G[i]);
+    if (atEndN > 0) l += logBinomLikelihood(atEndN, hikimodoshiK, P_AT_HIKIMODOSHI[i]);
     softItems.forEach((item) => {
       if (item.count > 0 && item.settings.includes(s)) {
         l += Math.min(item.count, SOFT_CAP) * TIER_WEIGHT[item.tier];
