@@ -232,6 +232,16 @@
     <h2>① 数値データ</h2>
     <p class="hint">この機種は設定3が存在しない5段階設定（設定1・2・4・5・6）です。空欄（0）の項目は計算に影響しません。</p>
 
+    <div class="field-group-label">AT初当たり確率</div>
+    <div class="field-row">
+      <label class="field">総G数
+        <input type="number" id="totalG" min="0" placeholder="例: 1500" />
+      </label>
+      <label class="field">AT当選回数
+        <input type="number" id="atInitialK" min="0" placeholder="例: 3" />
+      </label>
+    </div>
+
     <div class="field-group-label">BAR揃い時のAT直撃当選率</div>
     <div class="field-row">
       <label class="field">BAR揃い回数
@@ -264,7 +274,8 @@
   </div>
 
   <p class="source">
-    参考データ: <a href="https://p-town.dmm.com/machines/4885#anc-point" target="_blank" rel="noopener">DMMぱちタウン「革命機ヴァルヴレイヴ2」設定判別・推測ポイント</a>（2026/09/06更新）
+    参考データ: <a href="https://p-town.dmm.com/machines/4885#anc-point" target="_blank" rel="noopener">DMMぱちタウン「革命機ヴァルヴレイヴ2」設定判別・推測ポイント</a>（2026/09/06更新）／
+    <a href="https://1geki.jp/slot/l_valvrave2/0/" target="_blank" rel="noopener">一撃「ヴァルヴレイヴ2」設定差・設定判別要素まとめ</a>（2026/02/12更新）
   </p>
 
   <div class="disclaimer">
@@ -281,6 +292,7 @@
 // この機種は設定3が存在しない5段階設定 — DMMぱちタウン「革命機ヴァルヴレイヴ2」設定判別・推測ポイント各表も
 // すべて設定1・2・4・5・6の5列で構成されている
 const SETTINGS = [1, 2, 4, 5, 6];
+const P_AT_INITIAL = { 1: 1/476, 2: 1/473, 4: 1/464, 5: 1/459, 6: 1/456 }; // AT初当たり確率（一撃調べ）
 const P_BAR_AT_DIRECT = { 1: 0.03, 2: 0.04, 4: 0.05, 5: 0.06, 6: 0.07 }; // BAR揃い時のAT直撃当選率
 
 const ITEMS = [
@@ -320,6 +332,8 @@ const ITEMS = [
 const TIER_WEIGHT = { weak: 0.2, normal: 0.35, strong: 0.5 };
 const SOFT_CAP = 3;
 
+const totalGInput = document.getElementById('totalG');
+const atInitialKInput = document.getElementById('atInitialK');
 const barNInput = document.getElementById('barN');
 const barKInput = document.getElementById('barK');
 const resultBars = document.getElementById('resultBars');
@@ -386,16 +400,19 @@ function computeCandidateSettings() {
 }
 
 function render() {
+  const totalG = Math.max(0, parseInt(totalGInput.value, 10) || 0);
+  const atInitialK = Math.max(0, parseInt(atInitialKInput.value, 10) || 0);
   const barN = Math.max(0, parseInt(barNInput.value, 10) || 0);
   const barK = Math.max(0, parseInt(barKInput.value, 10) || 0);
   const candidates = computeCandidateSettings();
-  const hasNumericEvidence = barN > 0;
+  const hasNumericEvidence = totalG > 0 || barN > 0;
   const softItems = ITEMS.filter((item) => item.kind === 'soft');
   const hasSoftEvidence = softItems.some((item) => item.count > 0);
 
   const logLikelihoods = SETTINGS.map((s) => {
     if (!candidates.has(s)) return -Infinity;
     let l = 0;
+    if (totalG > 0) l += logBinomLikelihood(totalG, atInitialK, P_AT_INITIAL[s]);
     if (barN > 0) l += logBinomLikelihood(barN, barK, P_BAR_AT_DIRECT[s]);
     softItems.forEach((item) => {
       if (item.count > 0 && item.settings.includes(s)) {
@@ -437,7 +454,7 @@ function render() {
   }
 }
 
-[barNInput, barKInput].forEach((el) => el.addEventListener('input', render));
+[totalGInput, atInitialKInput, barNInput, barKInput].forEach((el) => el.addEventListener('input', render));
 render();
 </script>
 </body>

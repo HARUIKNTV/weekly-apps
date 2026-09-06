@@ -232,13 +232,16 @@
     <h2>① 数値データ</h2>
     <p class="hint">わかる範囲で入力するほど精度が上がります。空欄（0）の項目は計算に影響しません。</p>
 
-    <div class="field-group-label">CZ確率（機械仕掛けの女神）</div>
+    <div class="field-group-label">CZ確率（機械仕掛けの女神）／AT初当たり確率</div>
     <div class="field-row">
       <label class="field">総G数
         <input type="number" id="totalG" min="0" placeholder="例: 1500" />
       </label>
       <label class="field">機械仕掛けの女神当選回数
         <input type="number" id="czN" min="0" placeholder="例: 4" />
+      </label>
+      <label class="field">AT当選回数（初当り）
+        <input type="number" id="atN" min="0" placeholder="例: 3" />
       </label>
     </div>
 
@@ -284,7 +287,8 @@
   </div>
 
   <p class="source">
-    参考データ: <a href="https://p-town.dmm.com/machines/5019#anc-point" target="_blank" rel="noopener">DMMぱちタウン「からくりサーカス2」設定判別・推測ポイント</a>（2026/09/06更新）
+    参考データ: <a href="https://p-town.dmm.com/machines/5019#anc-point" target="_blank" rel="noopener">DMMぱちタウン「からくりサーカス2」設定判別・推測ポイント</a>（2026/09/06更新）／
+    <a href="https://1geki.jp/slot/l_karakuri2/0/" target="_blank" rel="noopener">一撃「からくりサーカス2」設定差・設定判別要素まとめ</a>（2026/07/18更新）
   </p>
 
   <div class="disclaimer">
@@ -300,6 +304,7 @@
 <script>
 // per-setting probability — DMMぱちタウン「からくりサーカス2」設定判別・推測ポイント各表より
 const P_CZ            = [1/342, 1/341, 1/339, 1/339, 1/327, 1/318]; // CZ確率（機械仕掛けの女神）
+const P_AT            = [1/519, 1/504, 1/474, 1/458, 1/430, 1/410]; // AT初当たり確率（一撃調べ）
 const P_STRONG_CHERRY  = [0.098, 0.102, 0.125, 0.137, 0.148, 0.164]; // 強チェリー契機のCZ以上当選率（通常滞在時）
 const P_STAGE_KATSU    = [0.40, 0.60, 0.40, 0.60, 0.40, 0.50]; // AT開始時、勝ステージになる割合
 
@@ -342,7 +347,7 @@ const ITEMS = [
 const TIER_WEIGHT = { weak: 0.2, normal: 0.35, strong: 0.5 };
 const SOFT_CAP = 3;
 
-const numericInputs = ['totalG', 'czN', 'cherryN', 'cherryK', 'stageN', 'stageK'].map((id) => document.getElementById(id));
+const numericInputs = ['totalG', 'czN', 'atN', 'cherryN', 'cherryK', 'stageN', 'stageK'].map((id) => document.getElementById(id));
 const resultBars = document.getElementById('resultBars');
 const summaryEl = document.getElementById('summary');
 
@@ -407,7 +412,7 @@ function computeCandidateSettings() {
 }
 
 function render() {
-  const [n, czK, cherryN, cherryK, stageN, stageK] = numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
+  const [n, czK, atN, cherryN, cherryK, stageN, stageK] = numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
   const candidates = computeCandidateSettings();
   const hasNumericEvidence = n > 0 || cherryN > 0 || stageN > 0;
   const softItems = ITEMS.filter((item) => item.kind === 'soft');
@@ -418,6 +423,7 @@ function render() {
     const i = s - 1;
     let l = 0;
     if (n > 0) l += logBinomLikelihood(n, czK, P_CZ[i]);
+    if (n > 0) l += logBinomLikelihood(n, atN, P_AT[i]);
     if (cherryN > 0) l += logBinomLikelihood(cherryN, cherryK, P_STRONG_CHERRY[i]);
     if (stageN > 0) l += logBinomLikelihood(stageN, stageK, P_STAGE_KATSU[i]);
     softItems.forEach((item) => {

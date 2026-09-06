@@ -261,6 +261,16 @@
         <input type="number" id="cycleK" min="0" placeholder="例: 1" />
       </label>
     </div>
+
+    <div class="field-group-label">4周期目のボーナス当選率</div>
+    <div class="field-row">
+      <label class="field">4周期目到達回数
+        <input type="number" id="cycle4N" min="0" placeholder="例: 3" />
+      </label>
+      <label class="field">うちボーナス当選回数
+        <input type="number" id="cycle4K" min="0" placeholder="例: 1" />
+      </label>
+    </div>
   </div>
 
   <div class="card">
@@ -284,7 +294,8 @@
   </div>
 
   <p class="source">
-    参考データ: <a href="https://p-town.dmm.com/machines/4930#anc-point" target="_blank" rel="noopener">DMMぱちタウン「甲鉄城のカバネリ 海門（うなと）決戦」設定判別・推測ポイント</a>（2026/09/06更新）
+    参考データ: <a href="https://p-town.dmm.com/machines/4930#anc-point" target="_blank" rel="noopener">DMMぱちタウン「甲鉄城のカバネリ 海門（うなと）決戦」設定判別・推測ポイント</a>（2026/09/06更新）／
+    <a href="https://1geki.jp/slot/l_kabaneri2/0/" target="_blank" rel="noopener">一撃「カバネリ」設定差・設定示唆まとめ</a>（2026/09/04更新）
   </p>
 
   <div class="disclaimer">
@@ -302,6 +313,7 @@
 const P_BELL          = [1/121.1, 1/114.4, 1/112.8, 1/106.2, 1/104.2, 1/99.1];
 const P_3000PT        = [0.012, 0.020, 0.020, 0.020, 0.020, 0.023];
 const P_3RD_CYCLE_BONUS = [0.184, 0.238, 0.211, 0.285, 0.324, 0.371];
+const P_4TH_CYCLE_BONUS = [0.336, 0.352, 0.363, 0.402, 0.434, 0.469]; // 4周期到達時のボーナス当選期待度（一撃調べ）
 
 // 「出にくい」系の示唆は、該当設定を除く全設定に弱い重みを加える形で近似している
 const ITEMS = [
@@ -348,7 +360,7 @@ const ITEMS = [
 const TIER_WEIGHT = { weak: 0.2, normal: 0.35, strong: 0.5 };
 const SOFT_CAP = 3;
 
-const numericInputs = ['totalG', 'bellN', 'chanceN', 'chanceK', 'cycleN', 'cycleK'].map((id) => document.getElementById(id));
+const numericInputs = ['totalG', 'bellN', 'chanceN', 'chanceK', 'cycleN', 'cycleK', 'cycle4N', 'cycle4K'].map((id) => document.getElementById(id));
 const resultBars = document.getElementById('resultBars');
 const summaryEl = document.getElementById('summary');
 
@@ -413,9 +425,9 @@ function computeCandidateSettings() {
 }
 
 function render() {
-  const [n, bellK, chanceN, chanceK, cycleN, cycleK] = numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
+  const [n, bellK, chanceN, chanceK, cycleN, cycleK, cycle4N, cycle4K] = numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
   const candidates = computeCandidateSettings();
-  const hasNumericEvidence = n > 0 || chanceN > 0 || cycleN > 0;
+  const hasNumericEvidence = n > 0 || chanceN > 0 || cycleN > 0 || cycle4N > 0;
   const softItems = ITEMS.filter((item) => item.kind === 'soft');
   const hasSoftEvidence = softItems.some((item) => item.count > 0);
 
@@ -426,6 +438,7 @@ function render() {
     if (n > 0) l += logBinomLikelihood(n, bellK, P_BELL[i]);
     if (chanceN > 0) l += logBinomLikelihood(chanceN, chanceK, P_3000PT[i]);
     if (cycleN > 0) l += logBinomLikelihood(cycleN, cycleK, P_3RD_CYCLE_BONUS[i]);
+    if (cycle4N > 0) l += logBinomLikelihood(cycle4N, cycle4K, P_4TH_CYCLE_BONUS[i]);
     softItems.forEach((item) => {
       if (item.count > 0 && item.settings.includes(s)) {
         l += Math.min(item.count, SOFT_CAP) * TIER_WEIGHT[item.tier];

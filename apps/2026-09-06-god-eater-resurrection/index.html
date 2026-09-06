@@ -232,13 +232,16 @@
     <h2>① 数値データ</h2>
     <p class="hint">わかる範囲で入力するほど精度が上がります。空欄（0）の項目は計算に影響しません。</p>
 
-    <div class="field-group-label">CZ確率（アラガミ防衛戦＋殲滅モード合算）</div>
+    <div class="field-group-label">CZ確率（アラガミ防衛戦＋殲滅モード合算）／AT「アラガミバースト」出現率</div>
     <div class="field-row">
       <label class="field">総G数
         <input type="number" id="totalG" min="0" placeholder="例: 1500" />
       </label>
       <label class="field">CZ当選回数
         <input type="number" id="czN" min="0" placeholder="例: 4" />
+      </label>
+      <label class="field">AT当選回数（アラガミバースト）
+        <input type="number" id="atN" min="0" placeholder="例: 3" />
       </label>
     </div>
 
@@ -300,7 +303,8 @@
   </div>
 
   <p class="source">
-    参考データ: <a href="https://p-town.dmm.com/machines/4602#anc-point" target="_blank" rel="noopener">DMMぱちタウン「ゴッドイーター リザレクション」設定判別・推測ポイント</a>（2026/08/30更新）
+    参考データ: <a href="https://p-town.dmm.com/machines/4602#anc-point" target="_blank" rel="noopener">DMMぱちタウン「ゴッドイーター リザレクション」設定判別・推測ポイント</a>（2026/08/30更新）／
+    <a href="https://1geki.jp/slot/l_godeater_r/0/" target="_blank" rel="noopener">一撃「ゴッドイーター」設定差・設定判別要素まとめ</a>（2026/01/13更新）
   </p>
 
   <div class="disclaimer">
@@ -316,6 +320,7 @@
 <script>
 // per-setting probability — DMMぱちタウン「ゴッドイーター リザレクション」設定判別・推測ポイント各表より
 const P_CZ            = [1/392.0, 1/378.3, 1/359.1, 1/343.4, 1/324.3, 1/310.6];
+const P_AT            = [1/351.9, 1/344.5, 1/330.1, 1/317.0, 1/302.2, 1/290.3]; // AT「アラガミバースト」出現率（一撃調べ）
 const P_WEAK_CHERRY_CZ = [0.002, 0.004, 0.006, 0.008, 0.010, 0.012];
 const P_SUIKA_CZ       = [0.002, 0.004, 0.006, 0.008, 0.010, 0.012];
 const P_CHANCE_CZ      = [0.158, 0.172, 0.191, 0.211, 0.234, 0.249];
@@ -368,7 +373,7 @@ const TIER_WEIGHT = { weak: 0.2, normal: 0.35, strong: 0.5 };
 const SOFT_CAP = 3;
 
 const numericInputs = [
-  'totalG', 'czN',
+  'totalG', 'czN', 'atN',
   'weakCherryN', 'weakCherryK', 'suikaN', 'suikaK', 'chanceN', 'chanceK',
   'strongCherryN', 'strongCherryK',
 ].map((id) => document.getElementById(id));
@@ -436,7 +441,7 @@ function computeCandidateSettings() {
 }
 
 function render() {
-  const [n, czK, wcN, wcK, suN, suK, chN, chK, scN, scK] = numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
+  const [n, czK, atK, wcN, wcK, suN, suK, chN, chK, scN, scK] = numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
   const candidates = computeCandidateSettings();
   const hasNumericEvidence = n > 0 || wcN > 0 || suN > 0 || chN > 0 || scN > 0;
   const softItems = ITEMS.filter((item) => item.kind === 'soft');
@@ -447,6 +452,7 @@ function render() {
     const i = s - 1;
     let l = 0;
     if (n > 0) l += logBinomLikelihood(n, czK, P_CZ[i]);
+    if (n > 0) l += logBinomLikelihood(n, atK, P_AT[i]);
     if (wcN > 0) l += logBinomLikelihood(wcN, wcK, P_WEAK_CHERRY_CZ[i]);
     if (suN > 0) l += logBinomLikelihood(suN, suK, P_SUIKA_CZ[i]);
     if (chN > 0) l += logBinomLikelihood(chN, chK, P_CHANCE_CZ[i]);

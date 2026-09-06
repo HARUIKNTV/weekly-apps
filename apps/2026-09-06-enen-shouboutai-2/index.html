@@ -67,6 +67,33 @@
   }
   .card .hint { color: var(--sub); font-size: 12px; margin: 0 0 10px; }
 
+  .field-group-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 12px 0 6px;
+  }
+  .field-group-label:first-of-type { margin-top: 0; }
+  .field-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  label.field { display: block; font-size: 12.5px; color: var(--sub); }
+  label.field input {
+    display: block;
+    width: 100%;
+    margin-top: 5px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--ink);
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+  label.field input:focus { outline: 2px solid var(--accent2); outline-offset: 1px; }
+
   .subhead {
     font-size: 11.5px;
     color: var(--sub);
@@ -202,7 +229,25 @@
   </div>
 
   <div class="card">
-    <h2>① 判別要素</h2>
+    <h2>① 数値データ</h2>
+    <p class="hint">わかる範囲で入力するほど精度が上がります。空欄（0）の項目は計算に影響しません。</p>
+
+    <div class="field-group-label">炎炎ループ初当たり確率／ボーナス初当たり確率</div>
+    <div class="field-row">
+      <label class="field">総G数
+        <input type="number" id="totalG" min="0" placeholder="例: 1500" />
+      </label>
+      <label class="field">炎炎ループ当選回数
+        <input type="number" id="enenLoopK" min="0" placeholder="例: 2" />
+      </label>
+      <label class="field">ボーナス当選回数
+        <input type="number" id="bonusK" min="0" placeholder="例: 5" />
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>② 判別要素</h2>
     <p class="subhead">出現したら<b>タップして＋</b>。金文字の「濃厚/否定」は候補を確定・除外し、斜体の「示唆」はあくまで参考程度の重みだけを加えます（確定情報ではありません）。</p>
     <div id="itemChips"></div>
   </div>
@@ -216,13 +261,14 @@
   </div>
 
   <div class="card">
-    <h2>② 結果</h2>
+    <h2>③ 結果</h2>
     <div class="result-bars" id="resultBars"></div>
     <div class="summary" id="summary"></div>
   </div>
 
   <p class="source">
-    参考データ: <a href="https://p-town.dmm.com/machines/4926#anc-point" target="_blank" rel="noopener">DMMぱちタウン「炎炎ノ消防隊2」設定判別・推測ポイント</a>（2026/09/06更新）
+    参考データ: <a href="https://p-town.dmm.com/machines/4926#anc-point" target="_blank" rel="noopener">DMMぱちタウン「炎炎ノ消防隊2」設定判別・推測ポイント</a>（2026/09/06更新）／
+    <a href="https://1geki.jp/slot/l_ennenn2/0/" target="_blank" rel="noopener">一撃「炎炎ノ消防隊2」設定差・設定判別要素まとめ</a>（2026/02/04更新）
   </p>
 
   <div class="disclaimer">
@@ -236,8 +282,11 @@
 </main>
 
 <script>
+// per-setting probability — 一撃「炎炎ノ消防隊2」設定差・設定判別要素まとめより
+const P_ENEN_LOOP = [1/684, 1/662, 1/617, 1/546, 1/518, 1/486]; // 炎炎ループ初当たり確率
+const P_BONUS     = [1/272, 1/269, 1/257, 1/242, 1/236, 1/227]; // ボーナス初当たり確率
+
 // 判別要素 — DMMぱちタウン「炎炎ノ消防隊2」設定判別・推測ポイント各表より
-// この機種は同ポイント内に単純な設定1〜6の数値テーブルがなかったため、判別要素（チップ）のみで構成
 const ITEMS = [
   { cat: 'ボーナス終了画面：設定示唆画面', label: 'B画面', impl: '高設定示唆', kind: 'soft', tier: 'normal', settings: [4, 5, 6] },
   { cat: 'ボーナス終了画面：設定示唆画面', label: 'C画面', impl: '高設定示唆[強]', kind: 'soft', tier: 'strong', settings: [4, 5, 6] },
@@ -279,6 +328,7 @@ const ITEMS = [
 const TIER_WEIGHT = { weak: 0.2, normal: 0.35, strong: 0.5 };
 const SOFT_CAP = 3;
 
+const numericInputs = ['totalG', 'enenLoopK', 'bonusK'].map((id) => document.getElementById(id));
 const resultBars = document.getElementById('resultBars');
 const summaryEl = document.getElementById('summary');
 
@@ -324,6 +374,11 @@ function buildChips(container, items) {
 }
 buildChips(document.getElementById('itemChips'), ITEMS);
 
+function logBinomLikelihood(n, k, p) {
+  const pp = Math.min(Math.max(p, 1e-9), 1 - 1e-9);
+  return k * Math.log(pp) + (n - k) * Math.log(1 - pp);
+}
+
 function computeCandidateSettings() {
   let candidates = new Set([1, 2, 3, 4, 5, 6]);
   ITEMS.forEach((item) => {
@@ -338,13 +393,18 @@ function computeCandidateSettings() {
 }
 
 function render() {
+  const [n, enenLoopK, bonusK] = numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
   const candidates = computeCandidateSettings();
+  const hasNumericEvidence = n > 0;
   const softItems = ITEMS.filter((item) => item.kind === 'soft');
   const hasSoftEvidence = softItems.some((item) => item.count > 0);
 
   const logLikelihoods = [1, 2, 3, 4, 5, 6].map((s) => {
     if (!candidates.has(s)) return -Infinity;
+    const i = s - 1;
     let l = 0;
+    if (n > 0) l += logBinomLikelihood(n, enenLoopK, P_ENEN_LOOP[i]);
+    if (n > 0) l += logBinomLikelihood(n, bonusK, P_BONUS[i]);
     softItems.forEach((item) => {
       if (item.count > 0 && item.settings.includes(s)) {
         l += Math.min(item.count, SOFT_CAP) * TIER_WEIGHT[item.tier];
@@ -371,15 +431,15 @@ function render() {
     resultBars.appendChild(row);
   });
 
-  const noDataAtAll = candidates.size === 6 && !hasSoftEvidence;
+  const noDataAtAll = candidates.size === 6 && !hasNumericEvidence && !hasSoftEvidence;
   if (candidates.size === 0) {
     summaryEl.innerHTML = '⚠️ 濃厚・否定要素同士が矛盾しています。カウントを見直してください。';
   } else if (noDataAtAll) {
-    summaryEl.innerHTML = 'まだデータがありません。①で出現した演出をカウントしてください。';
+    summaryEl.innerHTML = 'まだデータがありません。①②で入力・カウントしてください。';
   } else {
     const best = probs.indexOf(Math.max(...probs));
     const list = [...candidates].sort((a, b) => a - b).join(', ');
-    summaryEl.innerHTML = `現在の候補: <strong>設定${list}</strong>${hasSoftEvidence ? ` ／ 最有力: <strong>設定${best + 1}</strong>` : ''}` +
+    summaryEl.innerHTML = `現在の候補: <strong>設定${list}</strong>${hasNumericEvidence || hasSoftEvidence ? ` ／ 最有力: <strong>設定${best + 1}</strong>` : ''}` +
       (hasSoftEvidence ? '<span class="caveat">※斜体で示した「示唆」を反映していますが、あくまで参考程度の重みです。</span>' : '');
   }
 }
