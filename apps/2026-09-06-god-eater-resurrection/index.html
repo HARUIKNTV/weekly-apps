@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ゴッドイーター リザレクション 設定判別ツール</title>
+<meta name="description" content="スマスロ「ゴッドイーター リザレクション」の設定判別ツール。CZ確率などの数値データと、DMMぱちタウンの設定判別・推測ポイントに基づく示唆演出の出現回数から設定期待度を算出します。" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14100f;
+    --bg2: #1d1614;
+    --card: #241b18;
+    --line: #3a2b26;
+    --ink: #f2e9e4;
+    --sub: #b8a89f;
+    --accent: #c8102e;
+    --accent2: #d4a017;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Zen Kaku Gothic New', system-ui, sans-serif;
+    background:
+      radial-gradient(circle at 20% 0%, #2a1a1a 0%, transparent 45%),
+      radial-gradient(circle at 100% 100%, #201a10 0%, transparent 50%),
+      var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  a { color: var(--accent2); }
+  main { max-width: 780px; margin: 0 auto; padding: 24px 16px 48px; }
+
+  header { text-align: center; margin-bottom: 18px; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+    border-radius: 999px;
+    padding: 3px 12px;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: clamp(22px, 5vw, 30px);
+    font-weight: 900;
+    margin: 0 0 6px;
+    letter-spacing: 0.02em;
+  }
+  header p { color: var(--sub); font-size: 13px; margin: 0; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .card h2 {
+    font-size: 15px;
+    margin: 0 0 3px;
+  }
+  .card .hint { color: var(--sub); font-size: 12px; margin: 0 0 10px; }
+
+  .field-group-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 12px 0 6px;
+  }
+  .field-group-label:first-of-type { margin-top: 0; }
+  .field-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  label.field { display: block; font-size: 12.5px; color: var(--sub); }
+  label.field input {
+    display: block;
+    width: 100%;
+    margin-top: 5px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--ink);
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+  label.field input:focus { outline: 2px solid var(--accent2); outline-offset: 1px; }
+
+  .subhead {
+    font-size: 11.5px;
+    color: var(--sub);
+    margin: 0 0 8px;
+  }
+  .subhead b { color: var(--accent2); font-weight: 700; }
+
+  .cat-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 10px 0 5px;
+  }
+  .cat-label:first-of-type { margin-top: 0; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2px; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 4px 3px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .chip.active { border-color: var(--accent2); }
+  .chip .label { max-width: 210px; overflow: hidden; text-overflow: ellipsis; }
+  .chip .impl { font-size: 10.5px; margin-left: 2px; }
+  .chip .impl.hard { color: var(--accent2); }
+  .chip .impl.soft { color: var(--sub); font-style: italic; }
+  .chip button {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+  }
+  .chip button:active { background: var(--accent); border-color: var(--accent); }
+  .chip .count {
+    min-width: 14px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .result-bars { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
+  .bar-row { display: grid; grid-template-columns: 48px 1fr 52px; align-items: center; gap: 8px; }
+  .bar-row .num { font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .bar-track {
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    height: 16px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 999px;
+    transition: width 0.25s ease;
+  }
+  .bar-fill.excluded { background: #3a2b26; }
+  .bar-row .pct { text-align: right; font-variant-numeric: tabular-nums; font-size: 12px; color: var(--sub); }
+
+  .summary {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--bg2);
+    border-left: 3px solid var(--accent2);
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .summary strong { color: var(--accent2); }
+  .summary .caveat { display: block; margin-top: 4px; color: var(--sub); font-size: 11px; }
+
+  .source {
+    font-size: 11.5px;
+    color: var(--sub);
+    text-align: center;
+    margin-top: 18px;
+  }
+  .disclaimer {
+    font-size: 11px;
+    color: var(--sub);
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-top: 14px;
+  }
+  footer { text-align: center; margin-top: 18px; font-size: 12px; }
+  footer a { color: var(--sub); }
+
+  .ad-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: repeating-linear-gradient(45deg, #1a1412, #1a1412 10px, #201917 10px, #201917 20px);
+    border: 2px dashed var(--line);
+    border-radius: 14px;
+    color: var(--sub);
+    margin: 0 auto 14px;
+  }
+  .ad-slot-inner { text-align: center; }
+  .ad-slot-label { display: block; font-size: 12px; letter-spacing: 0.1em; }
+  .ad-slot-size { display: block; font-size: 10.5px; opacity: 0.7; }
+  .ad-banner { max-width: 728px; height: 90px; }
+  .ad-rect { max-width: 300px; height: 250px; }
+</style>
+</head>
+<body>
+<main>
+
+  <header>
+    <span class="eyebrow">設定判別ツール</span>
+    <h1>⚔️ スマスロ「ゴッドイーター リザレクション」設定判別</h1>
+    <p>数値データと示唆演出の出現回数から設定期待度を算出します。</p>
+  </header>
+
+  <div class="ad-slot ad-banner">
+    <div class="ad-slot-inner">
+      <span class="ad-slot-label">広告スペース</span>
+      <span class="ad-slot-size">728 x 90</span>
+    </div>
+    <!-- AdSense/other ad network snippet goes here. See README.md "広告の設置について". -->
+  </div>
+
+  <div class="card">
+    <h2>① 数値データ</h2>
+    <p class="hint">わかる範囲で入力するほど精度が上がります。空欄（0）の項目は計算に影響しません。</p>
+
+    <div class="field-group-label">CZ確率（アラガミ防衛戦＋殲滅モード合算）</div>
+    <div class="field-row">
+      <label class="field">総G数
+        <input type="number" id="totalG" min="0" placeholder="例: 1500" />
+      </label>
+      <label class="field">CZ当選回数
+        <input type="number" id="czN" min="0" placeholder="例: 4" />
+      </label>
+    </div>
+
+    <div class="field-group-label">通常時レア役契機のCZ当選率</div>
+    <div class="field-row">
+      <label class="field">弱チェリー成立回数
+        <input type="number" id="weakCherryN" min="0" placeholder="例: 8" />
+      </label>
+      <label class="field">うちCZ当選回数
+        <input type="number" id="weakCherryK" min="0" placeholder="例: 0" />
+      </label>
+    </div>
+    <div class="field-row" style="margin-top:8px">
+      <label class="field">スイカ成立回数
+        <input type="number" id="suikaN" min="0" placeholder="例: 8" />
+      </label>
+      <label class="field">うちCZ当選回数
+        <input type="number" id="suikaK" min="0" placeholder="例: 0" />
+      </label>
+    </div>
+    <div class="field-row" style="margin-top:8px">
+      <label class="field">チャンス目成立回数
+        <input type="number" id="chanceN" min="0" placeholder="例: 5" />
+      </label>
+      <label class="field">うちCZ当選回数
+        <input type="number" id="chanceK" min="0" placeholder="例: 1" />
+      </label>
+    </div>
+
+    <div class="field-group-label">強チェリー契機のAT直撃当選率</div>
+    <div class="field-row">
+      <label class="field">強チェリー成立回数
+        <input type="number" id="strongCherryN" min="0" placeholder="例: 3" />
+      </label>
+      <label class="field">うちAT直撃当選回数
+        <input type="number" id="strongCherryK" min="0" placeholder="例: 0" />
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>② 判別要素</h2>
+    <p class="subhead">出現したら<b>タップして＋</b>。金文字の「濃厚/否定」は候補を確定・除外し、斜体の「示唆」はあくまで参考程度の重みだけを加えます（確定情報ではありません）。</p>
+    <div id="itemChips"></div>
+  </div>
+
+  <div class="ad-slot ad-rect" style="margin: 0 auto 14px;">
+    <div class="ad-slot-inner">
+      <span class="ad-slot-label">広告スペース</span>
+      <span class="ad-slot-size">300 x 250</span>
+    </div>
+    <!-- AdSense/other ad network snippet goes here. See README.md "広告の設置について". -->
+  </div>
+
+  <div class="card">
+    <h2>③ 結果</h2>
+    <div class="result-bars" id="resultBars"></div>
+    <div class="summary" id="summary"></div>
+  </div>
+
+  <p class="source">
+    参考データ: <a href="https://p-town.dmm.com/machines/4602#anc-point" target="_blank" rel="noopener">DMMぱちタウン「ゴッドイーター リザレクション」設定判別・推測ポイント</a>（2026/08/30更新）
+  </p>
+
+  <div class="disclaimer">
+    ※本ツールは公開されている設定差データをもとにした期待値の目安を計算するファンメイド計算機であり、実際の設定を保証するものではありません。特に「示唆」にとどまる要素はあくまで可能性の参考程度で、確定情報ではありません。パチスロは適切な予算内で、遊技は自己責任・節度をもって楽しみましょう。
+  </div>
+
+  <footer>
+    <a href="../../">← スロ設定判別ラボ トップへ</a>
+  </footer>
+
+</main>
+
+<script>
+// per-setting probability — DMMぱちタウン「ゴッドイーター リザレクション」設定判別・推測ポイント各表より
+const P_CZ            = [1/392.0, 1/378.3, 1/359.1, 1/343.4, 1/324.3, 1/310.6];
+const P_WEAK_CHERRY_CZ = [0.002, 0.004, 0.006, 0.008, 0.010, 0.012];
+const P_SUIKA_CZ       = [0.002, 0.004, 0.006, 0.008, 0.010, 0.012];
+const P_CHANCE_CZ      = [0.158, 0.172, 0.191, 0.211, 0.234, 0.249];
+const P_STRONG_CHERRY_AT_DIRECT = [0.004, 0.012, 0.024, 0.043, 0.051, 0.059];
+
+// 判別要素 — 「リンドウ」「シオ」はDMM表記が「濃厚」ではなく「設定n以上」のみだったため、
+// 確定要素として扱わず示唆（tier: normal）に分類している。
+const ITEMS = [
+  { cat: 'AT終了画面', label: 'コウタ', impl: '高設定示唆[弱]', kind: 'soft', tier: 'weak', settings: [4, 5, 6] },
+  { cat: 'AT終了画面', label: 'アリサ', impl: '偶数設定示唆[弱]', kind: 'soft', tier: 'weak', settings: [2, 4, 6] },
+  { cat: 'AT終了画面', label: 'ユウ', impl: '2・3・4否定', kind: 'hard', type: 'deny', settings: [2, 3, 4] },
+  { cat: 'AT終了画面', label: 'ソーマ', impl: '高設定示唆[強]', kind: 'soft', tier: 'strong', settings: [4, 5, 6] },
+  { cat: 'AT終了画面', label: 'サクヤ', impl: '偶数設定示唆[強]', kind: 'soft', tier: 'strong', settings: [2, 4, 6] },
+  { cat: 'AT終了画面', label: 'リンドウ', impl: '3以上濃厚', kind: 'hard', type: 'only', settings: [3, 4, 5, 6] },
+  { cat: 'AT終了画面', label: 'シオ', impl: '4以上濃厚', kind: 'hard', type: 'only', settings: [4, 5, 6] },
+  { cat: 'AT終了画面', label: 'カフェ', impl: '偶数濃厚', kind: 'hard', type: 'only', settings: [2, 4, 6] },
+  { cat: 'AT終了画面', label: 'キャラ集合', impl: '5以上濃厚', kind: 'hard', type: 'only', settings: [5, 6] },
+  { cat: 'AT終了画面', label: 'ミニキャラ', impl: '6濃厚', kind: 'hard', type: 'only', settings: [6] },
+
+  { cat: 'ストーリーパート終了時のボイス', label: 'ヒバリ', impl: '偶数設定示唆[弱]', kind: 'soft', tier: 'weak', settings: [2, 4, 6] },
+  { cat: 'ストーリーパート終了時のボイス', label: 'サクヤ', impl: '偶数設定示唆[強]', kind: 'soft', tier: 'strong', settings: [2, 4, 6] },
+  { cat: 'ストーリーパート終了時のボイス', label: 'ソーマ', impl: '高設定示唆[弱]', kind: 'soft', tier: 'weak', settings: [4, 5, 6] },
+  { cat: 'ストーリーパート終了時のボイス', label: 'レン', impl: '高設定示唆[強]', kind: 'soft', tier: 'strong', settings: [4, 5, 6] },
+  { cat: 'ストーリーパート終了時のボイス', label: 'ユウ', impl: '2・3否定', kind: 'hard', type: 'deny', settings: [2, 3] },
+  { cat: 'ストーリーパート終了時のボイス', label: 'エリナ', impl: '偶数濃厚', kind: 'hard', type: 'only', settings: [2, 4, 6] },
+  { cat: 'ストーリーパート終了時のボイス', label: 'リンドウ', impl: '設定2以上', kind: 'soft', tier: 'normal', settings: [2, 3, 4, 5, 6] },
+  { cat: 'ストーリーパート終了時のボイス', label: 'シオ', impl: '設定5以上', kind: 'soft', tier: 'normal', settings: [5, 6] },
+
+  { cat: '枚数決定ゾーン：連打上乗せ表示', label: '＋44', impl: '4以上濃厚', kind: 'hard', type: 'only', settings: [4, 5, 6] },
+  { cat: '枚数決定ゾーン：連打上乗せ表示', label: '＋55', impl: '5以上濃厚', kind: 'hard', type: 'only', settings: [5, 6] },
+  { cat: '枚数決定ゾーン：連打上乗せ表示', label: '＋66', impl: '6濃厚', kind: 'hard', type: 'only', settings: [6] },
+
+  { cat: '通常時演出：ユウタイマー', label: '6スタート×AT非当選', impl: '6濃厚', kind: 'hard', type: 'only', settings: [6] },
+
+  { cat: '獲得枚数表示', label: '246OVER', impl: '偶数濃厚', kind: 'hard', type: 'only', settings: [2, 4, 6] },
+  { cat: '獲得枚数表示', label: '456OVER', impl: '4以上濃厚', kind: 'hard', type: 'only', settings: [4, 5, 6] },
+  { cat: '獲得枚数表示', label: '555OVER', impl: '5以上濃厚', kind: 'hard', type: 'only', settings: [5, 6] },
+  { cat: '獲得枚数表示', label: '666OVER', impl: '6濃厚', kind: 'hard', type: 'only', settings: [6] },
+
+  { cat: 'エンディング：レア役成立時のボイス', label: 'ヒバリ', impl: '偶数設定示唆[弱]', kind: 'soft', tier: 'weak', settings: [2, 4, 6] },
+  { cat: 'エンディング：レア役成立時のボイス', label: 'サクヤ', impl: '偶数設定示唆[強]', kind: 'soft', tier: 'strong', settings: [2, 4, 6] },
+  { cat: 'エンディング：レア役成立時のボイス', label: 'ソーマ', impl: '高設定示唆[弱]', kind: 'soft', tier: 'weak', settings: [4, 5, 6] },
+  { cat: 'エンディング：レア役成立時のボイス', label: 'レン', impl: '高設定示唆[強]', kind: 'soft', tier: 'strong', settings: [4, 5, 6] },
+  { cat: 'エンディング：レア役成立時のボイス', label: 'ユウ', impl: '2・3否定', kind: 'hard', type: 'deny', settings: [2, 3] },
+  { cat: 'エンディング：レア役成立時のボイス', label: 'エリナ', impl: '偶数濃厚', kind: 'hard', type: 'only', settings: [2, 4, 6] },
+  { cat: 'エンディング：レア役成立時のボイス', label: 'リンドウ', impl: '設定2以上', kind: 'soft', tier: 'normal', settings: [2, 3, 4, 5, 6] },
+  { cat: 'エンディング：レア役成立時のボイス', label: 'シオ', impl: '設定5以上', kind: 'soft', tier: 'normal', settings: [5, 6] },
+];
+const TIER_WEIGHT = { weak: 0.2, normal: 0.35, strong: 0.5 };
+const SOFT_CAP = 3;
+
+const numericInputs = [
+  'totalG', 'czN',
+  'weakCherryN', 'weakCherryK', 'suikaN', 'suikaK', 'chanceN', 'chanceK',
+  'strongCherryN', 'strongCherryK',
+].map((id) => document.getElementById(id));
+const resultBars = document.getElementById('resultBars');
+const summaryEl = document.getElementById('summary');
+
+function buildChips(container, items) {
+  let lastCat = null;
+  let rowEl = null;
+  items.forEach((item) => {
+    item.count = 0;
+    if (item.cat !== lastCat) {
+      const catLabel = document.createElement('div');
+      catLabel.className = 'cat-label';
+      catLabel.textContent = item.cat;
+      container.appendChild(catLabel);
+      rowEl = document.createElement('div');
+      rowEl.className = 'chip-row';
+      container.appendChild(rowEl);
+      lastCat = item.cat;
+    }
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.innerHTML = `
+      <button type="button" class="dec" aria-label="減らす">－</button>
+      <span class="label">${item.label}</span>
+      <span class="impl ${item.kind}">${item.impl}</span>
+      <span class="count">0</span>
+      <button type="button" class="inc" aria-label="増やす">＋</button>
+    `;
+    const countEl = chip.querySelector('.count');
+    chip.querySelector('.inc').addEventListener('click', () => {
+      item.count += 1;
+      countEl.textContent = item.count;
+      chip.classList.toggle('active', item.count > 0);
+      render();
+    });
+    chip.querySelector('.dec').addEventListener('click', () => {
+      item.count = Math.max(0, item.count - 1);
+      countEl.textContent = item.count;
+      chip.classList.toggle('active', item.count > 0);
+      render();
+    });
+    rowEl.appendChild(chip);
+  });
+}
+buildChips(document.getElementById('itemChips'), ITEMS);
+
+function logBinomLikelihood(n, k, p) {
+  const pp = Math.min(Math.max(p, 1e-9), 1 - 1e-9);
+  return k * Math.log(pp) + (n - k) * Math.log(1 - pp);
+}
+
+function computeCandidateSettings() {
+  let candidates = new Set([1, 2, 3, 4, 5, 6]);
+  ITEMS.forEach((item) => {
+    if (item.kind !== 'hard' || item.count <= 0) return;
+    if (item.type === 'only') {
+      candidates = new Set([...candidates].filter((s) => item.settings.includes(s)));
+    } else if (item.type === 'deny') {
+      item.settings.forEach((s) => candidates.delete(s));
+    }
+  });
+  return candidates;
+}
+
+function render() {
+  const [n, czK, wcN, wcK, suN, suK, chN, chK, scN, scK] = numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
+  const candidates = computeCandidateSettings();
+  const hasNumericEvidence = n > 0 || wcN > 0 || suN > 0 || chN > 0 || scN > 0;
+  const softItems = ITEMS.filter((item) => item.kind === 'soft');
+  const hasSoftEvidence = softItems.some((item) => item.count > 0);
+
+  const logLikelihoods = [1, 2, 3, 4, 5, 6].map((s) => {
+    if (!candidates.has(s)) return -Infinity;
+    const i = s - 1;
+    let l = 0;
+    if (n > 0) l += logBinomLikelihood(n, czK, P_CZ[i]);
+    if (wcN > 0) l += logBinomLikelihood(wcN, wcK, P_WEAK_CHERRY_CZ[i]);
+    if (suN > 0) l += logBinomLikelihood(suN, suK, P_SUIKA_CZ[i]);
+    if (chN > 0) l += logBinomLikelihood(chN, chK, P_CHANCE_CZ[i]);
+    if (scN > 0) l += logBinomLikelihood(scN, scK, P_STRONG_CHERRY_AT_DIRECT[i]);
+    softItems.forEach((item) => {
+      if (item.count > 0 && item.settings.includes(s)) {
+        l += Math.min(item.count, SOFT_CAP) * TIER_WEIGHT[item.tier];
+      }
+    });
+    return l;
+  });
+
+  const finiteMax = Math.max(...logLikelihoods.filter((v) => Number.isFinite(v)), -Infinity);
+  const weights = logLikelihoods.map((v) => (Number.isFinite(v) ? Math.exp(v - finiteMax) : 0));
+  const total = weights.reduce((a, b) => a + b, 0);
+  const probs = total > 0 ? weights.map((w) => w / total) : [0, 0, 0, 0, 0, 0];
+
+  resultBars.innerHTML = '';
+  probs.forEach((p, i) => {
+    const pct = (p * 100).toFixed(1);
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <div class="num">設定${i + 1}</div>
+      <div class="bar-track"><div class="bar-fill ${candidates.has(i + 1) ? '' : 'excluded'}" style="width:${pct}%"></div></div>
+      <div class="pct">${candidates.has(i + 1) ? pct + '%' : '除外'}</div>
+    `;
+    resultBars.appendChild(row);
+  });
+
+  const noDataAtAll = candidates.size === 6 && !hasNumericEvidence && !hasSoftEvidence;
+  if (candidates.size === 0) {
+    summaryEl.innerHTML = '⚠️ 濃厚・否定要素同士が矛盾しています。カウントを見直してください。';
+  } else if (noDataAtAll) {
+    summaryEl.innerHTML = 'まだデータがありません。①に数値を入力するか、②で出現した演出をカウントしてください。';
+  } else {
+    const best = probs.indexOf(Math.max(...probs));
+    const list = [...candidates].sort((a, b) => a - b).join(', ');
+    summaryEl.innerHTML = `現在の候補: <strong>設定${list}</strong>${hasNumericEvidence || hasSoftEvidence ? ` ／ 最有力: <strong>設定${best + 1}</strong>` : ''}` +
+      (hasSoftEvidence ? '<span class="caveat">※斜体で示した「示唆」を反映していますが、あくまで参考程度の重みです。</span>' : '');
+  }
+}
+
+numericInputs.forEach((el) => el.addEventListener('input', render));
+render();
+</script>
+</body>
+</html>
