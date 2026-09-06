@@ -121,6 +121,8 @@ ${JSON.stringify(
       var(--bg);
     background-attachment: fixed;
     overflow-x: hidden;
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }
   a { color: inherit; }
 
