@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>スマスロ東京喰種 設定判別ツール</title>
+<meta name="description" content="スマスロ「L 東京喰種」の設定判別ツール。CZ当選回数と総G数から設定推測、示唆演出のチェックで候補を絞り込めます。" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14100f;
+    --bg2: #1d1614;
+    --card: #241b18;
+    --line: #3a2b26;
+    --ink: #f2e9e4;
+    --sub: #b8a89f;
+    --accent: #c8102e;
+    --accent2: #d4a017;
+    --good: #4caf82;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Zen Kaku Gothic New', system-ui, sans-serif;
+    background:
+      radial-gradient(circle at 20% 0%, #2a1a1a 0%, transparent 45%),
+      radial-gradient(circle at 100% 100%, #201a10 0%, transparent 50%),
+      var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  a { color: var(--accent2); }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 18px 60px; }
+
+  header { text-align: center; margin-bottom: 28px; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+    border-radius: 999px;
+    padding: 3px 12px;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-size: clamp(24px, 5vw, 34px);
+    font-weight: 900;
+    margin: 0 0 8px;
+    letter-spacing: 0.02em;
+  }
+  header p { color: var(--sub); font-size: 14px; margin: 0; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 20px;
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    font-size: 16px;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card .hint { color: var(--sub); font-size: 12.5px; margin: 0 0 16px; }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 6px;
+  }
+  label.field { display: block; font-size: 13px; color: var(--sub); }
+  label.field input {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--ink);
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+  }
+  label.field input:focus { outline: 2px solid var(--accent2); outline-offset: 1px; }
+
+  .group-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 18px 0 8px;
+  }
+  .group-title:first-child { margin-top: 0; }
+  .check-list { display: flex; flex-direction: column; gap: 8px; }
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--bg2);
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 13.5px;
+  }
+  .check-item:hover { border-color: var(--line); }
+  .check-item input { margin-top: 3px; accent-color: var(--accent); flex: none; }
+  .check-item .tag {
+    font-size: 11px;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+
+  .result-bars { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .bar-row { display: grid; grid-template-columns: 52px 1fr 56px; align-items: center; gap: 10px; }
+  .bar-row .num { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .bar-track {
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    height: 20px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 999px;
+    transition: width 0.25s ease;
+  }
+  .bar-fill.excluded { background: #3a2b26; }
+  .bar-row .pct { text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; color: var(--sub); }
+
+  .summary {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: var(--bg2);
+    border-left: 3px solid var(--accent2);
+    border-radius: 6px;
+    font-size: 13.5px;
+  }
+  .summary strong { color: var(--accent2); }
+
+  .source {
+    font-size: 12px;
+    color: var(--sub);
+    text-align: center;
+    margin-top: 28px;
+  }
+  .disclaimer {
+    font-size: 11.5px;
+    color: var(--sub);
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 24px;
+  }
+  footer { text-align: center; margin-top: 30px; font-size: 12px; }
+  footer a { color: var(--sub); }
+</style>
+</head>
+<body>
+<main>
+
+  <header>
+    <span class="eyebrow">設定判別ツール</span>
+    <h1>🎰 スマスロ「L 東京喰種」設定判別</h1>
+    <p>CZ当選回数と総G数から設定期待度を算出。示唆演出のチェックで候補をさらに絞り込めます。</p>
+  </header>
+
+  <div class="card">
+    <h2>① 数値データを入力</h2>
+    <p class="hint">「レミニセンス」「大喰いの利世」は通常時CZの2種類。両方わかる範囲で入力するほど精度が上がります。</p>
+    <div class="field-row">
+      <label class="field">総G数
+        <input type="number" id="totalG" min="0" placeholder="例: 1500" />
+      </label>
+      <label class="field">レミニセンス当選回数
+        <input type="number" id="reminiscence" min="0" placeholder="例: 5" />
+      </label>
+      <label class="field">大喰いの利世当選回数
+        <input type="number" id="oogui" min="0" placeholder="例: 1" />
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>② 示唆演出をチェック</h2>
+    <p class="hint">出た演出にチェックを入れると、矛盾する設定を候補から除外します。</p>
+
+    <div class="group-title">CZ終了画面のエンドカード</div>
+    <div class="check-list">
+      <label class="check-item"><input type="checkbox" data-type="only" data-settings="2,4,6" /> 鈴屋什造 <span class="tag">偶数設定濃厚</span></label>
+      <label class="check-item"><input type="checkbox" data-type="only" data-settings="4,5,6" /> 梟 <span class="tag">設定4以上濃厚</span></label>
+      <label class="check-item"><input type="checkbox" data-type="only" data-settings="6" /> 有馬貴将 <span class="tag">設定6濃厚</span></label>
+    </div>
+
+    <div class="group-title">AT終了画面</div>
+    <div class="check-list">
+      <label class="check-item"><input type="checkbox" data-type="only" data-settings="1,3,5" /> 亜門鋼太朗＆真戸暁 <span class="tag">奇数設定示唆</span></label>
+      <label class="check-item"><input type="checkbox" data-type="only" data-settings="2,4,6" /> 鈴屋什造＆篠原幸紀 <span class="tag">偶数設定示唆</span></label>
+      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="1" /> 神代利世 <span class="tag">設定1否定</span></label>
+      <label class="check-item"><input type="checkbox" data-type="only" data-settings="4,5,6" /> 金木研＆霧嶋董香 <span class="tag">設定4以上濃厚</span></label>
+      <label class="check-item"><input type="checkbox" data-type="only" data-settings="6" /> あんていく全員集合 <span class="tag">設定6濃厚</span></label>
+    </div>
+
+    <div class="group-title">月山招待状</div>
+    <div class="check-list">
+      <label class="check-item"><input type="checkbox" data-type="only" data-settings="2,4,6" /> 偶にはディナーでもどうだい？ <span class="tag">偶数設定示唆</span></label>
+      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="1" /> 不思議な香りだ… <span class="tag">設定1否定</span></label>
+      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="2" /> 君はなかなかの活字中毒らしいね <span class="tag">設定2否定</span></label>
+      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="3" /> 本は良いよね… <span class="tag">設定3否定</span></label>
+      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="4" /> 僕としたことがすまない <span class="tag">設定4否定</span></label>
+      <label class="check-item"><input type="checkbox" data-type="only" data-settings="4,5,6" /> 存分に楽しもうじゃないか <span class="tag">設定4以上濃厚</span></label>
+      <label class="check-item"><input type="checkbox" data-type="only" data-settings="6" /> 特別な夜を楽しもうじゃないか <span class="tag">設定6濃厚</span></label>
+    </div>
+
+    <div class="group-title">獲得枚数表示</div>
+    <div class="check-list">
+      <label class="check-item"><input type="checkbox" data-type="only" data-settings="4,5,6" /> 456 OVER <span class="tag">設定4以上濃厚</span></label>
+      <label class="check-item"><input type="checkbox" data-type="only" data-settings="6" /> 666 OVER <span class="tag">設定6濃厚</span></label>
+      <label class="check-item"><input type="checkbox" data-type="only" data-settings="6" /> 1000-7 OVER <span class="tag">設定6濃厚</span></label>
+    </div>
+
+    <div class="group-title">エンディング中のレア役カード</div>
+    <div class="check-list">
+      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="1" /> 銅カード（鈴屋什造） <span class="tag">設定1否定</span></label>
+      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="2" /> 銅カード（高槻泉） <span class="tag">設定2否定</span></label>
+      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="3" /> 銅カード（梟） <span class="tag">設定3否定</span></label>
+      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="4" /> 銅カード（エト） <span class="tag">設定4否定</span></label>
+      <label class="check-item"><input type="checkbox" data-type="only" data-settings="3,4,5,6" /> 銀カード <span class="tag">設定3以上濃厚</span></label>
+      <label class="check-item"><input type="checkbox" data-type="only" data-settings="4,5,6" /> 金カード <span class="tag">設定4以上濃厚</span></label>
+      <label class="check-item"><input type="checkbox" data-type="only" data-settings="6" /> 虹カード <span class="tag">設定6濃厚</span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>③ 結果</h2>
+    <div class="result-bars" id="resultBars"></div>
+    <div class="summary" id="summary"></div>
+  </div>
+
+  <p class="source">
+    参考データ: <a href="https://p-town.dmm.com/specials/4038" target="_blank" rel="noopener">DMMぱちタウン「スマスロ東京喰種（グール）の設定差」</a>（2026/09/01更新）
+  </p>
+
+  <div class="disclaimer">
+    ※本ツールは公開されている設定差データをもとにした期待値の目安を計算するファンメイド計算機であり、実際の設定を保証するものではありません。パチスロは適切な予算内で、遊技は自己責任・節度をもって楽しみましょう。
+  </div>
+
+  <footer>
+    <a href="../../">← Weekly Apps 博覧会 トップへ</a>
+  </footer>
+
+</main>
+
+<script>
+// per-setting probability (1 / denominator) — from DMM p-town article
+const P_REMINISCENCE = [1/300.5, 1/295.1, 1/287.6, 1/276.7, 1/262.7, 1/251.2];
+const P_OOGUI        = [1/2079.1, 1/1906.5, 1/1722.8, 1/1478.9, 1/1226.6, 1/1074.9];
+
+const totalGInput = document.getElementById('totalG');
+const reminiscenceInput = document.getElementById('reminiscence');
+const ooguiInput = document.getElementById('oogui');
+const resultBars = document.getElementById('resultBars');
+const summaryEl = document.getElementById('summary');
+const checkboxes = Array.from(document.querySelectorAll('.check-item input[type="checkbox"]'));
+
+function logBinomLikelihood(n, k, p) {
+  const pp = Math.min(Math.max(p, 1e-9), 1 - 1e-9);
+  return k * Math.log(pp) + (n - k) * Math.log(1 - pp);
+}
+
+function computeCandidateSettings() {
+  let candidates = new Set([1, 2, 3, 4, 5, 6]);
+  checkboxes.forEach((cb) => {
+    if (!cb.checked) return;
+    const settings = cb.dataset.settings.split(',').map(Number);
+    if (cb.dataset.type === 'only') {
+      candidates = new Set([...candidates].filter((s) => settings.includes(s)));
+    } else if (cb.dataset.type === 'deny') {
+      settings.forEach((s) => candidates.delete(s));
+    }
+  });
+  return candidates;
+}
+
+function render() {
+  const n = Math.max(0, parseInt(totalGInput.value, 10) || 0);
+  const k1 = Math.max(0, parseInt(reminiscenceInput.value, 10) || 0);
+  const k2 = Math.max(0, parseInt(ooguiInput.value, 10) || 0);
+  const candidates = computeCandidateSettings();
+
+  const logLikelihoods = [1, 2, 3, 4, 5, 6].map((s) => {
+    if (!candidates.has(s)) return -Infinity;
+    if (n === 0) return 0; // no numeric data yet -> uniform among candidates
+    const i = s - 1;
+    return logBinomLikelihood(n, k1, P_REMINISCENCE[i]) + logBinomLikelihood(n, k2, P_OOGUI[i]);
+  });
+
+  const finiteMax = Math.max(...logLikelihoods.filter((v) => Number.isFinite(v)), -Infinity);
+  const weights = logLikelihoods.map((v) => (Number.isFinite(v) ? Math.exp(v - finiteMax) : 0));
+  const total = weights.reduce((a, b) => a + b, 0);
+  const probs = total > 0 ? weights.map((w) => w / total) : [0, 0, 0, 0, 0, 0];
+
+  resultBars.innerHTML = '';
+  probs.forEach((p, i) => {
+    const pct = (p * 100).toFixed(1);
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <div class="num">設定${i + 1}</div>
+      <div class="bar-track"><div class="bar-fill ${candidates.has(i + 1) ? '' : 'excluded'}" style="width:${pct}%"></div></div>
+      <div class="pct">${candidates.has(i + 1) ? pct + '%' : '除外'}</div>
+    `;
+    resultBars.appendChild(row);
+  });
+
+  if (candidates.size === 0) {
+    summaryEl.innerHTML = '⚠️ チェックした示唆同士が矛盾しています。入力内容を見直してください。';
+  } else if (candidates.size === 6 && n === 0) {
+    summaryEl.innerHTML = 'まだデータがありません。①にG数とCZ当選回数を入力するか、②で出た演出をチェックしてください。';
+  } else {
+    const best = probs.indexOf(Math.max(...probs));
+    const list = [...candidates].sort((a, b) => a - b).join(', ');
+    summaryEl.innerHTML = `現在の候補: <strong>設定${list}</strong>${n > 0 ? ` ／ 最有力: <strong>設定${best + 1}</strong>` : ''}`;
+  }
+}
+
+[totalGInput, reminiscenceInput, ooguiInput].forEach((el) => el.addEventListener('input', render));
+checkboxes.forEach((cb) => cb.addEventListener('change', render));
+render();
+</script>
+</body>
+</html>

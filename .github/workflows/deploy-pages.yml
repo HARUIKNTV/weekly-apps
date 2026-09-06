@@ -31,8 +31,12 @@ jobs:
           for dir in apps/*/; do
             name=$(basename "$dir")
             if [ -f "$dir/package.json" ]; then
-              echo "== Building $name =="
+              echo "== Building Expo app: $name =="
               (cd "$dir" && npm install && npx expo export -p web --output-dir "$GITHUB_WORKSPACE/site/$name")
+            elif [ -f "$dir/index.html" ]; then
+              echo "== Copying static tool: $name =="
+              mkdir -p "$GITHUB_WORKSPACE/site/$name"
+              cp -r "$dir"/. "$GITHUB_WORKSPACE/site/$name/"
             fi
           done
 

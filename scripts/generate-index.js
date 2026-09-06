@@ -32,6 +32,7 @@ const GENRE_EMOJI = {
   "chore / roommate task splitter": "🧹",
   "simple quiz / trivia game": "❓",
   "color palette generator": "🌈",
+  "パチスロ設定判別ツール": "🎰",
 };
 const FALLBACK_EMOJI = "🎮";
 
