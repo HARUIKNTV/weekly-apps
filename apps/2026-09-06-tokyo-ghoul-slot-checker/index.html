@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>スマスロ東京喰種 設定判別ツール</title>
-<meta name="description" content="スマスロ「L 東京喰種」の設定判別ツール。CZ当選回数と総G数から設定推測、示唆演出のチェックで候補を絞り込めます。" />
+<meta name="description" content="スマスロ「L 東京喰種」の設定判別ツール。CZ当選回数と総G数から設定推測、示唆演出の出現回数で候補を絞り込めます。" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
@@ -18,7 +18,6 @@
     --sub: #b8a89f;
     --accent: #c8102e;
     --accent2: #d4a017;
-    --good: #4caf82;
   }
   * { box-sizing: border-box; }
   body {
@@ -29,12 +28,12 @@
       radial-gradient(circle at 100% 100%, #201a10 0%, transparent 50%),
       var(--bg);
     color: var(--ink);
-    line-height: 1.6;
+    line-height: 1.5;
   }
   a { color: var(--accent2); }
-  main { max-width: 760px; margin: 0 auto; padding: 32px 18px 60px; }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
 
-  header { text-align: center; margin-bottom: 28px; }
+  header { text-align: center; margin-bottom: 18px; }
   .eyebrow {
     display: inline-block;
     font-size: 12px;
@@ -43,88 +42,101 @@
     border: 1px solid var(--accent2);
     border-radius: 999px;
     padding: 3px 12px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
   h1 {
-    font-size: clamp(24px, 5vw, 34px);
+    font-size: clamp(22px, 5vw, 30px);
     font-weight: 900;
-    margin: 0 0 8px;
+    margin: 0 0 6px;
     letter-spacing: 0.02em;
   }
-  header p { color: var(--sub); font-size: 14px; margin: 0; }
+  header p { color: var(--sub); font-size: 13px; margin: 0; }
 
   .card {
     background: var(--card);
     border: 1px solid var(--line);
     border-radius: 14px;
-    padding: 22px 20px;
-    margin-bottom: 20px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
   }
   .card h2 {
-    font-size: 16px;
-    margin: 0 0 4px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    font-size: 15px;
+    margin: 0 0 3px;
   }
-  .card .hint { color: var(--sub); font-size: 12.5px; margin: 0 0 16px; }
+  .card .hint { color: var(--sub); font-size: 12px; margin: 0 0 10px; }
 
   .field-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 14px;
-    margin-bottom: 6px;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
   }
-  label.field { display: block; font-size: 13px; color: var(--sub); }
+  label.field { display: block; font-size: 12.5px; color: var(--sub); }
   label.field input {
     display: block;
     width: 100%;
-    margin-top: 6px;
+    margin-top: 5px;
     background: var(--bg2);
     border: 1px solid var(--line);
     border-radius: 8px;
-    padding: 10px 12px;
+    padding: 8px 10px;
     color: var(--ink);
-    font-size: 16px;
+    font-size: 15px;
     font-variant-numeric: tabular-nums;
   }
   label.field input:focus { outline: 2px solid var(--accent2); outline-offset: 1px; }
 
-  .group-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--accent2);
-    margin: 18px 0 8px;
+  .subhead {
+    font-size: 11.5px;
+    color: var(--sub);
+    margin: 0 0 8px;
   }
-  .group-title:first-child { margin-top: 0; }
-  .check-list { display: flex; flex-direction: column; gap: 8px; }
-  .check-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 8px 10px;
-    border-radius: 8px;
+  .subhead b { color: var(--accent2); font-weight: 700; }
+
+  /* ---------- compact counter chips ---------- */
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     background: var(--bg2);
-    border: 1px solid transparent;
-    cursor: pointer;
-    font-size: 13.5px;
-  }
-  .check-item:hover { border-color: var(--line); }
-  .check-item input { margin-top: 3px; accent-color: var(--accent); flex: none; }
-  .check-item .tag {
-    font-size: 11px;
-    color: var(--accent2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 4px 3px 10px;
+    font-size: 12px;
     white-space: nowrap;
   }
+  .chip.active { border-color: var(--accent2); }
+  .chip .label { max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
+  .chip .impl { color: var(--accent2); font-size: 10.5px; margin-left: 2px; }
+  .chip button {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+  }
+  .chip button:active { background: var(--accent); border-color: var(--accent); }
+  .chip .count {
+    min-width: 14px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--ink);
+  }
 
-  .result-bars { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
-  .bar-row { display: grid; grid-template-columns: 52px 1fr 56px; align-items: center; gap: 10px; }
-  .bar-row .num { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .result-bars { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
+  .bar-row { display: grid; grid-template-columns: 48px 1fr 52px; align-items: center; gap: 8px; }
+  .bar-row .num { font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; }
   .bar-track {
     background: var(--bg2);
     border: 1px solid var(--line);
     border-radius: 999px;
-    height: 20px;
+    height: 16px;
     overflow: hidden;
   }
   .bar-fill {
@@ -134,34 +146,35 @@
     transition: width 0.25s ease;
   }
   .bar-fill.excluded { background: #3a2b26; }
-  .bar-row .pct { text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; color: var(--sub); }
+  .bar-row .pct { text-align: right; font-variant-numeric: tabular-nums; font-size: 12px; color: var(--sub); }
 
   .summary {
-    margin-top: 14px;
-    padding: 12px 14px;
+    margin-top: 10px;
+    padding: 10px 12px;
     background: var(--bg2);
     border-left: 3px solid var(--accent2);
     border-radius: 6px;
-    font-size: 13.5px;
+    font-size: 13px;
   }
   .summary strong { color: var(--accent2); }
+  .summary .caveat { display: block; margin-top: 4px; color: var(--sub); font-size: 11px; }
 
   .source {
-    font-size: 12px;
+    font-size: 11.5px;
     color: var(--sub);
     text-align: center;
-    margin-top: 28px;
+    margin-top: 18px;
   }
   .disclaimer {
-    font-size: 11.5px;
+    font-size: 11px;
     color: var(--sub);
     background: var(--bg2);
     border: 1px solid var(--line);
     border-radius: 10px;
-    padding: 12px 14px;
-    margin-top: 24px;
+    padding: 10px 12px;
+    margin-top: 14px;
   }
-  footer { text-align: center; margin-top: 30px; font-size: 12px; }
+  footer { text-align: center; margin-top: 18px; font-size: 12px; }
   footer a { color: var(--sub); }
 </style>
 </head>
@@ -171,12 +184,12 @@
   <header>
     <span class="eyebrow">設定判別ツール</span>
     <h1>🎰 スマスロ「L 東京喰種」設定判別</h1>
-    <p>CZ当選回数と総G数から設定期待度を算出。示唆演出のチェックで候補をさらに絞り込めます。</p>
+    <p>CZ当選回数と総G数、示唆演出の出現回数から設定期待度を算出します。</p>
   </header>
 
   <div class="card">
-    <h2>① 数値データを入力</h2>
-    <p class="hint">「レミニセンス」「大喰いの利世」は通常時CZの2種類。両方わかる範囲で入力するほど精度が上がります。</p>
+    <h2>① 数値データ</h2>
+    <p class="hint">「レミニセンス」「大喰いの利世」は通常時CZの2種類。わかる範囲で入力するほど精度が上がります。</p>
     <div class="field-row">
       <label class="field">総G数
         <input type="number" id="totalG" min="0" placeholder="例: 1500" />
@@ -191,57 +204,19 @@
   </div>
 
   <div class="card">
-    <h2>② 示唆演出をチェック</h2>
-    <p class="hint">出た演出にチェックを入れると、矛盾する設定を候補から除外します。</p>
-
-    <div class="group-title">CZ終了画面のエンドカード</div>
-    <div class="check-list">
-      <label class="check-item"><input type="checkbox" data-type="only" data-settings="2,4,6" /> 鈴屋什造 <span class="tag">偶数設定濃厚</span></label>
-      <label class="check-item"><input type="checkbox" data-type="only" data-settings="4,5,6" /> 梟 <span class="tag">設定4以上濃厚</span></label>
-      <label class="check-item"><input type="checkbox" data-type="only" data-settings="6" /> 有馬貴将 <span class="tag">設定6濃厚</span></label>
-    </div>
-
-    <div class="group-title">AT終了画面</div>
-    <div class="check-list">
-      <label class="check-item"><input type="checkbox" data-type="only" data-settings="1,3,5" /> 亜門鋼太朗＆真戸暁 <span class="tag">奇数設定示唆</span></label>
-      <label class="check-item"><input type="checkbox" data-type="only" data-settings="2,4,6" /> 鈴屋什造＆篠原幸紀 <span class="tag">偶数設定示唆</span></label>
-      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="1" /> 神代利世 <span class="tag">設定1否定</span></label>
-      <label class="check-item"><input type="checkbox" data-type="only" data-settings="4,5,6" /> 金木研＆霧嶋董香 <span class="tag">設定4以上濃厚</span></label>
-      <label class="check-item"><input type="checkbox" data-type="only" data-settings="6" /> あんていく全員集合 <span class="tag">設定6濃厚</span></label>
-    </div>
-
-    <div class="group-title">月山招待状</div>
-    <div class="check-list">
-      <label class="check-item"><input type="checkbox" data-type="only" data-settings="2,4,6" /> 偶にはディナーでもどうだい？ <span class="tag">偶数設定示唆</span></label>
-      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="1" /> 不思議な香りだ… <span class="tag">設定1否定</span></label>
-      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="2" /> 君はなかなかの活字中毒らしいね <span class="tag">設定2否定</span></label>
-      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="3" /> 本は良いよね… <span class="tag">設定3否定</span></label>
-      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="4" /> 僕としたことがすまない <span class="tag">設定4否定</span></label>
-      <label class="check-item"><input type="checkbox" data-type="only" data-settings="4,5,6" /> 存分に楽しもうじゃないか <span class="tag">設定4以上濃厚</span></label>
-      <label class="check-item"><input type="checkbox" data-type="only" data-settings="6" /> 特別な夜を楽しもうじゃないか <span class="tag">設定6濃厚</span></label>
-    </div>
-
-    <div class="group-title">獲得枚数表示</div>
-    <div class="check-list">
-      <label class="check-item"><input type="checkbox" data-type="only" data-settings="4,5,6" /> 456 OVER <span class="tag">設定4以上濃厚</span></label>
-      <label class="check-item"><input type="checkbox" data-type="only" data-settings="6" /> 666 OVER <span class="tag">設定6濃厚</span></label>
-      <label class="check-item"><input type="checkbox" data-type="only" data-settings="6" /> 1000-7 OVER <span class="tag">設定6濃厚</span></label>
-    </div>
-
-    <div class="group-title">エンディング中のレア役カード</div>
-    <div class="check-list">
-      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="1" /> 銅カード（鈴屋什造） <span class="tag">設定1否定</span></label>
-      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="2" /> 銅カード（高槻泉） <span class="tag">設定2否定</span></label>
-      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="3" /> 銅カード（梟） <span class="tag">設定3否定</span></label>
-      <label class="check-item"><input type="checkbox" data-type="deny" data-settings="4" /> 銅カード（エト） <span class="tag">設定4否定</span></label>
-      <label class="check-item"><input type="checkbox" data-type="only" data-settings="3,4,5,6" /> 銀カード <span class="tag">設定3以上濃厚</span></label>
-      <label class="check-item"><input type="checkbox" data-type="only" data-settings="4,5,6" /> 金カード <span class="tag">設定4以上濃厚</span></label>
-      <label class="check-item"><input type="checkbox" data-type="only" data-settings="6" /> 虹カード <span class="tag">設定6濃厚</span></label>
-    </div>
+    <h2>② 濃厚・否定要素</h2>
+    <p class="subhead">出現したら<b>タップして＋</b>。1回でも出れば、矛盾する設定を候補から確実に除外します。</p>
+    <div class="chip-row" id="hardChips"></div>
   </div>
 
   <div class="card">
-    <h2>③ 結果</h2>
+    <h2>③ 示唆要素（参考程度）</h2>
+    <p class="subhead">こちらは<b>確定情報ではありません</b>。出現回数に応じて、それらしい設定にわずかに重みを加えるだけの参考値です。</p>
+    <div class="chip-row" id="softChips"></div>
+  </div>
+
+  <div class="card">
+    <h2>④ 結果</h2>
     <div class="result-bars" id="resultBars"></div>
     <div class="summary" id="summary"></div>
   </div>
@@ -251,7 +226,7 @@
   </p>
 
   <div class="disclaimer">
-    ※本ツールは公開されている設定差データをもとにした期待値の目安を計算するファンメイド計算機であり、実際の設定を保証するものではありません。パチスロは適切な予算内で、遊技は自己責任・節度をもって楽しみましょう。
+    ※本ツールは公開されている設定差データをもとにした期待値の目安を計算するファンメイド計算機であり、実際の設定を保証するものではありません。特に「③ 示唆要素」はあくまで可能性の参考程度で、確定情報ではありません。パチスロは適切な予算内で、遊技は自己責任・節度をもって楽しみましょう。
   </div>
 
   <footer>
@@ -265,12 +240,77 @@
 const P_REMINISCENCE = [1/300.5, 1/295.1, 1/287.6, 1/276.7, 1/262.7, 1/251.2];
 const P_OOGUI        = [1/2079.1, 1/1906.5, 1/1722.8, 1/1478.9, 1/1226.6, 1/1074.9];
 
+// "濃厚"（確定）"否定"（除外）要素 — 1回でも出現すれば矛盾設定をハード除外
+const HARD_ITEMS = [
+  { label: 'CZ終了：鈴屋什造', impl: '偶数濃厚', type: 'only', settings: [2, 4, 6] },
+  { label: 'CZ終了：梟', impl: '4以上濃厚', type: 'only', settings: [4, 5, 6] },
+  { label: 'CZ終了：有馬貴将', impl: '6濃厚', type: 'only', settings: [6] },
+  { label: 'AT終了：神代利世', impl: '1否定', type: 'deny', settings: [1] },
+  { label: 'AT終了：金木研＆董香', impl: '4以上濃厚', type: 'only', settings: [4, 5, 6] },
+  { label: 'AT終了：あんていく全員', impl: '6濃厚', type: 'only', settings: [6] },
+  { label: '招待状：不思議な香り', impl: '1否定', type: 'deny', settings: [1] },
+  { label: '招待状：活字中毒', impl: '2否定', type: 'deny', settings: [2] },
+  { label: '招待状：本は良い', impl: '3否定', type: 'deny', settings: [3] },
+  { label: '招待状：すまない', impl: '4否定', type: 'deny', settings: [4] },
+  { label: '招待状：存分に（金文字）', impl: '4以上濃厚', type: 'only', settings: [4, 5, 6] },
+  { label: '招待状：特別な夜（虹文字）', impl: '6濃厚', type: 'only', settings: [6] },
+  { label: '獲得枚数：456 OVER', impl: '4以上濃厚', type: 'only', settings: [4, 5, 6] },
+  { label: '獲得枚数：666 OVER', impl: '6濃厚', type: 'only', settings: [6] },
+  { label: '獲得枚数：1000-7 OVER', impl: '6濃厚', type: 'only', settings: [6] },
+  { label: '銅カード：鈴屋什造', impl: '1否定', type: 'deny', settings: [1] },
+  { label: '銅カード：高槻泉', impl: '2否定', type: 'deny', settings: [2] },
+  { label: '銅カード：梟', impl: '3否定', type: 'deny', settings: [3] },
+  { label: '銅カード：エト', impl: '4否定', type: 'deny', settings: [4] },
+  { label: '銀カード', impl: '3以上濃厚', type: 'only', settings: [3, 4, 5, 6] },
+  { label: '金カード', impl: '4以上濃厚', type: 'only', settings: [4, 5, 6] },
+  { label: '虹カード', impl: '6濃厚', type: 'only', settings: [6] },
+];
+
+// "示唆"のみ（濃厚/否定ではない）要素 — ハード除外はせず、出現回数に応じてわずかに重みを加えるだけ
+const SOFT_ITEMS = [
+  { label: 'AT終了：亜門＆真戸', impl: '奇数示唆', settings: [1, 3, 5] },
+  { label: 'AT終了：鈴屋＆篠原', impl: '偶数示唆', settings: [2, 4, 6] },
+  { label: '招待状：偶にはディナー', impl: '偶数示唆', settings: [2, 4, 6] },
+];
+const SOFT_WEIGHT = 0.35; // 1回出現あたりの重み（対数尤度換算）。あくまで参考程度に抑えるための小さめの値
+const SOFT_CAP = 3; // 同じ示唆を何度数えても、影響はこの回数分でカンスト
+
 const totalGInput = document.getElementById('totalG');
 const reminiscenceInput = document.getElementById('reminiscence');
 const ooguiInput = document.getElementById('oogui');
 const resultBars = document.getElementById('resultBars');
 const summaryEl = document.getElementById('summary');
-const checkboxes = Array.from(document.querySelectorAll('.check-item input[type="checkbox"]'));
+
+function buildChips(container, items, isSoft) {
+  items.forEach((item) => {
+    item.count = 0;
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.innerHTML = `
+      <button type="button" class="dec" aria-label="減らす">－</button>
+      <span class="label">${item.label}</span>
+      <span class="impl">${item.impl}</span>
+      <span class="count">0</span>
+      <button type="button" class="inc" aria-label="増やす">＋</button>
+    `;
+    const countEl = chip.querySelector('.count');
+    chip.querySelector('.inc').addEventListener('click', () => {
+      item.count += 1;
+      countEl.textContent = item.count;
+      chip.classList.toggle('active', item.count > 0);
+      render();
+    });
+    chip.querySelector('.dec').addEventListener('click', () => {
+      item.count = Math.max(0, item.count - 1);
+      countEl.textContent = item.count;
+      chip.classList.toggle('active', item.count > 0);
+      render();
+    });
+    container.appendChild(chip);
+  });
+}
+buildChips(document.getElementById('hardChips'), HARD_ITEMS, false);
+buildChips(document.getElementById('softChips'), SOFT_ITEMS, true);
 
 function logBinomLikelihood(n, k, p) {
   const pp = Math.min(Math.max(p, 1e-9), 1 - 1e-9);
@@ -279,13 +319,12 @@ function logBinomLikelihood(n, k, p) {
 
 function computeCandidateSettings() {
   let candidates = new Set([1, 2, 3, 4, 5, 6]);
-  checkboxes.forEach((cb) => {
-    if (!cb.checked) return;
-    const settings = cb.dataset.settings.split(',').map(Number);
-    if (cb.dataset.type === 'only') {
-      candidates = new Set([...candidates].filter((s) => settings.includes(s)));
-    } else if (cb.dataset.type === 'deny') {
-      settings.forEach((s) => candidates.delete(s));
+  HARD_ITEMS.forEach((item) => {
+    if (item.count <= 0) return;
+    if (item.type === 'only') {
+      candidates = new Set([...candidates].filter((s) => item.settings.includes(s)));
+    } else if (item.type === 'deny') {
+      item.settings.forEach((s) => candidates.delete(s));
     }
   });
   return candidates;
@@ -296,12 +335,18 @@ function render() {
   const k1 = Math.max(0, parseInt(reminiscenceInput.value, 10) || 0);
   const k2 = Math.max(0, parseInt(ooguiInput.value, 10) || 0);
   const candidates = computeCandidateSettings();
+  const hasSoftEvidence = SOFT_ITEMS.some((item) => item.count > 0);
 
   const logLikelihoods = [1, 2, 3, 4, 5, 6].map((s) => {
     if (!candidates.has(s)) return -Infinity;
-    if (n === 0) return 0; // no numeric data yet -> uniform among candidates
     const i = s - 1;
-    return logBinomLikelihood(n, k1, P_REMINISCENCE[i]) + logBinomLikelihood(n, k2, P_OOGUI[i]);
+    let l = n > 0 ? logBinomLikelihood(n, k1, P_REMINISCENCE[i]) + logBinomLikelihood(n, k2, P_OOGUI[i]) : 0;
+    SOFT_ITEMS.forEach((item) => {
+      if (item.count > 0 && item.settings.includes(s)) {
+        l += Math.min(item.count, SOFT_CAP) * SOFT_WEIGHT;
+      }
+    });
+    return l;
   });
 
   const finiteMax = Math.max(...logLikelihoods.filter((v) => Number.isFinite(v)), -Infinity);
@@ -322,19 +367,20 @@ function render() {
     resultBars.appendChild(row);
   });
 
+  const noDataAtAll = candidates.size === 6 && n === 0 && !hasSoftEvidence;
   if (candidates.size === 0) {
-    summaryEl.innerHTML = '⚠️ チェックした示唆同士が矛盾しています。入力内容を見直してください。';
-  } else if (candidates.size === 6 && n === 0) {
-    summaryEl.innerHTML = 'まだデータがありません。①にG数とCZ当選回数を入力するか、②で出た演出をチェックしてください。';
+    summaryEl.innerHTML = '⚠️ 濃厚・否定要素同士が矛盾しています。カウントを見直してください。';
+  } else if (noDataAtAll) {
+    summaryEl.innerHTML = 'まだデータがありません。①に数値を入力するか、②③で出現した演出をカウントしてください。';
   } else {
     const best = probs.indexOf(Math.max(...probs));
     const list = [...candidates].sort((a, b) => a - b).join(', ');
-    summaryEl.innerHTML = `現在の候補: <strong>設定${list}</strong>${n > 0 ? ` ／ 最有力: <strong>設定${best + 1}</strong>` : ''}`;
+    summaryEl.innerHTML = `現在の候補: <strong>設定${list}</strong>${n > 0 || hasSoftEvidence ? ` ／ 最有力: <strong>設定${best + 1}</strong>` : ''}` +
+      (hasSoftEvidence ? '<span class="caveat">※「③ 示唆要素」を反映していますが、あくまで参考程度の重みです。</span>' : '');
   }
 }
 
 [totalGInput, reminiscenceInput, ooguiInput].forEach((el) => el.addEventListener('input', render));
-checkboxes.forEach((cb) => cb.addEventListener('change', render));
 render();
 </script>
 </body>
