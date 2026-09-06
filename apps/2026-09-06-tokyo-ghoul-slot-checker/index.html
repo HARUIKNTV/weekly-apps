@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>スマスロ東京喰種 設定判別ツール</title>
-<meta name="description" content="スマスロ「L 東京喰種」の設定判別ツール。CZ当選回数と総G数、DMMぱちタウンの設定判別・推測ポイントに基づく示唆演出の出現回数から設定期待度を算出します。" />
+<meta name="description" content="スマスロ「L 東京喰種」の設定判別ツール。CZ・裏AT関連の数値データと、DMMぱちタウンの設定判別・推測ポイントに基づく示唆演出の出現回数から設定期待度を算出します。" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
@@ -65,6 +65,13 @@
   }
   .card .hint { color: var(--sub); font-size: 12px; margin: 0 0 10px; }
 
+  .field-group-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 12px 0 6px;
+  }
+  .field-group-label:first-of-type { margin-top: 0; }
   .field-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -114,7 +121,9 @@
   }
   .chip.active { border-color: var(--accent2); }
   .chip .label { max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
-  .chip .impl { color: var(--accent2); font-size: 10.5px; margin-left: 2px; }
+  .chip .impl { font-size: 10.5px; margin-left: 2px; }
+  .chip .impl.hard { color: var(--accent2); }
+  .chip .impl.soft { color: var(--sub); font-style: italic; }
   .chip button {
     width: 20px;
     height: 20px;
@@ -191,12 +200,14 @@
   <header>
     <span class="eyebrow">設定判別ツール</span>
     <h1>🎰 スマスロ「L 東京喰種」設定判別</h1>
-    <p>CZ当選回数と総G数、示唆演出の出現回数から設定期待度を算出します。</p>
+    <p>数値データと示唆演出の出現回数から設定期待度を算出します。</p>
   </header>
 
   <div class="card">
-    <h2>① 数値データ（CZ・エピソードボーナス）</h2>
-    <p class="hint">「レミニセンス」「大喰いの利世」は通常時CZの2種類。わかる範囲で入力するほど精度が上がります。</p>
+    <h2>① 数値データ</h2>
+    <p class="hint">わかる範囲で入力するほど精度が上がります。空欄（0）の項目は計算に影響しません。</p>
+
+    <div class="field-group-label">CZ・エピソードボーナス</div>
     <div class="field-row">
       <label class="field">総G数
         <input type="number" id="totalG" min="0" placeholder="例: 1500" />
@@ -208,22 +219,42 @@
         <input type="number" id="oogui" min="0" placeholder="例: 1" />
       </label>
     </div>
+
+    <div class="field-group-label">裏AT関連</div>
+    <div class="field-row">
+      <label class="field">有馬J非経由のAT当選回数
+        <input type="number" id="uraAtN" min="0" placeholder="例: 10" />
+      </label>
+      <label class="field">うち裏AT直行回数
+        <input type="number" id="uraAtK" min="0" placeholder="例: 1" />
+      </label>
+    </div>
+    <div class="field-row" style="margin-top:8px">
+      <label class="field">100G以内のゲーム数契機AT当選回数
+        <input type="number" id="ura100N" min="0" placeholder="例: 5" />
+      </label>
+      <label class="field">うち裏AT当選回数
+        <input type="number" id="ura100K" min="0" placeholder="例: 1" />
+      </label>
+    </div>
+    <div class="field-row" style="margin-top:8px">
+      <label class="field">200G以内のゲーム数契機AT当選回数
+        <input type="number" id="ura200N" min="0" placeholder="例: 8" />
+      </label>
+      <label class="field">うち裏AT当選回数
+        <input type="number" id="ura200K" min="0" placeholder="例: 1" />
+      </label>
+    </div>
   </div>
 
   <div class="card">
-    <h2>② 濃厚・否定要素</h2>
-    <p class="subhead">出現したら<b>タップして＋</b>。1回でも出れば、矛盾する設定を候補から確実に除外します。</p>
-    <div id="hardChips"></div>
+    <h2>② 判別要素</h2>
+    <p class="subhead">出現したら<b>タップして＋</b>。金文字の「濃厚/否定」は候補を確定・除外し、斜体の「示唆」はあくまで参考程度の重みだけを加えます（確定情報ではありません）。</p>
+    <div id="itemChips"></div>
   </div>
 
   <div class="card">
-    <h2>③ 示唆要素（参考程度）</h2>
-    <p class="subhead">こちらは<b>確定情報ではありません</b>。出現回数に応じて、それらしい設定にわずかに重みを加えるだけの参考値です（［強］は［弱］より重めに反映）。</p>
-    <div id="softChips"></div>
-  </div>
-
-  <div class="card">
-    <h2>④ 結果</h2>
+    <h2>③ 結果</h2>
     <div class="result-bars" id="resultBars"></div>
     <div class="summary" id="summary"></div>
   </div>
@@ -233,7 +264,7 @@
   </p>
 
   <div class="disclaimer">
-    ※本ツールは公開されている設定差データをもとにした期待値の目安を計算するファンメイド計算機であり、実際の設定を保証するものではありません。特に「③ 示唆要素」はあくまで可能性の参考程度で、確定情報ではありません。パチスロは適切な予算内で、遊技は自己責任・節度をもって楽しみましょう。
+    ※本ツールは公開されている設定差データをもとにした期待値の目安を計算するファンメイド計算機であり、実際の設定を保証するものではありません。特に「示唆」にとどまる要素はあくまで可能性の参考程度で、確定情報ではありません。パチスロは適切な予算内で、遊技は自己責任・節度をもって楽しみましょう。
   </div>
 
   <footer>
@@ -243,69 +274,68 @@
 </main>
 
 <script>
-// per-setting probability (1 / denominator) — DMMぱちタウン「設定判別・推測ポイント > CZとエピソードボーナス」
-const P_REMINISCENCE = [1/300.5, 1/295.1, 1/287.6, 1/276.7, 1/262.7, 1/251.2];
+// per-setting probability — DMMぱちタウン「設定判別・推測ポイント」各表より
+const P_REMINISCENCE = [1/300.5, 1/295.1, 1/287.6, 1/276.7, 1/262.7, 1/251.2]; // CZとエピソードボーナス
 const P_OOGUI        = [1/2079.1, 1/1906.5, 1/1722.8, 1/1478.9, 1/1226.6, 1/1074.9];
+const P_URA_AT_CHOKKOU = [0.0110, 0.0132, 0.0163, 0.0219, 0.0285, 0.0332]; // 裏AT突入率（AT当選時・有馬J非経由）
+const P_URA_AT_100G    = [0.0318, 0.0354, 0.0393, 0.0440, 0.0485, 0.0514]; // ゲーム数当選契機の裏AT当選率（100G以内）
+const P_URA_AT_200G    = [0.0299, 0.0332, 0.0369, 0.0411, 0.0453, 0.0477]; // ゲーム数当選契機の裏AT当選率（200G以内）
 
-// "濃厚"（確定）"否定"（除外）要素 — DMMぱちタウンの分類（終了画面系／通常時演出／エンディング／獲得枚数表示）を保持
-// 1回でも出現すれば矛盾設定をハード除外
-const HARD_ITEMS = [
-  { cat: 'AT終了画面', label: '神代利世', impl: '1否定', type: 'deny', settings: [1] },
-  { cat: 'AT終了画面', label: '金木研＆霧嶋董香', impl: '4以上濃厚', type: 'only', settings: [4, 5, 6] },
-  { cat: 'AT終了画面', label: 'あんていく全員集合', impl: '6濃厚', type: 'only', settings: [6] },
+// 判別要素 — DMMぱちタウンの分類順（終了画面系→通常時演出→エンディング→獲得枚数表示）をそのまま保持。
+// kind:'hard' は1回でも出現すれば矛盾設定をハード除外（type:'only'|'deny'）。
+// kind:'soft' は確定情報ではない「示唆」のみの要素で、ハード除外はせず tier（弱/通常/強）に応じた重みを加えるだけ。
+const ITEMS = [
+  { cat: 'AT終了画面', label: '亜門鋼太朗＆真戸暁', impl: '奇数示唆', kind: 'soft', tier: 'normal', settings: [1, 3, 5] },
+  { cat: 'AT終了画面', label: '鈴屋什造＆篠原幸紀', impl: '偶数示唆', kind: 'soft', tier: 'normal', settings: [2, 4, 6] },
+  { cat: 'AT終了画面', label: '神代利世', impl: '1否定', kind: 'hard', type: 'deny', settings: [1] },
+  { cat: 'AT終了画面', label: '笛口雛実＆笛口リョーコ', impl: '高設定示唆[弱]', kind: 'soft', tier: 'weak', settings: [4, 5, 6] },
+  { cat: 'AT終了画面', label: '四方蓮示＆イトリ＆ウタ', impl: '高設定示唆[強]', kind: 'soft', tier: 'strong', settings: [4, 5, 6] },
+  { cat: 'AT終了画面', label: '金木研＆霧嶋董香', impl: '4以上濃厚', kind: 'hard', type: 'only', settings: [4, 5, 6] },
+  { cat: 'AT終了画面', label: 'あんていく全員集合', impl: '6濃厚', kind: 'hard', type: 'only', settings: [6] },
 
-  { cat: 'CZ終了画面のエンドカード', label: '鈴屋什造', impl: '偶数濃厚', type: 'only', settings: [2, 4, 6] },
-  { cat: 'CZ終了画面のエンドカード', label: '梟', impl: '4以上濃厚', type: 'only', settings: [4, 5, 6] },
-  { cat: 'CZ終了画面のエンドカード', label: '有馬貴将', impl: '6濃厚', type: 'only', settings: [6] },
+  { cat: 'CZ終了画面のエンドカード', label: '鈴屋什造', impl: '偶数濃厚', kind: 'hard', type: 'only', settings: [2, 4, 6] },
+  { cat: 'CZ終了画面のエンドカード', label: '梟', impl: '4以上濃厚', kind: 'hard', type: 'only', settings: [4, 5, 6] },
+  { cat: 'CZ終了画面のエンドカード', label: '有馬貴将', impl: '6濃厚', kind: 'hard', type: 'only', settings: [6] },
 
-  { cat: 'ナミちゃんトロフィー', label: '銅', impl: '2以上濃厚', type: 'only', settings: [2, 3, 4, 5, 6] },
-  { cat: 'ナミちゃんトロフィー', label: '銀', impl: '3以上濃厚', type: 'only', settings: [3, 4, 5, 6] },
-  { cat: 'ナミちゃんトロフィー', label: '金', impl: '4以上濃厚', type: 'only', settings: [4, 5, 6] },
-  { cat: 'ナミちゃんトロフィー', label: '喰種柄', impl: '5以上濃厚', type: 'only', settings: [5, 6] },
-  { cat: 'ナミちゃんトロフィー', label: '虹', impl: '6濃厚', type: 'only', settings: [6] },
+  { cat: 'ナミちゃんトロフィー', label: '銅', impl: '2以上濃厚', kind: 'hard', type: 'only', settings: [2, 3, 4, 5, 6] },
+  { cat: 'ナミちゃんトロフィー', label: '銀', impl: '3以上濃厚', kind: 'hard', type: 'only', settings: [3, 4, 5, 6] },
+  { cat: 'ナミちゃんトロフィー', label: '金', impl: '4以上濃厚', kind: 'hard', type: 'only', settings: [4, 5, 6] },
+  { cat: 'ナミちゃんトロフィー', label: '喰種柄', impl: '5以上濃厚', kind: 'hard', type: 'only', settings: [5, 6] },
+  { cat: 'ナミちゃんトロフィー', label: '虹', impl: '6濃厚', kind: 'hard', type: 'only', settings: [6] },
 
-  { cat: '月山招待状（通常時演出）', label: '不思議な香り', impl: '1否定', type: 'deny', settings: [1] },
-  { cat: '月山招待状（通常時演出）', label: '活字中毒', impl: '2否定', type: 'deny', settings: [2] },
-  { cat: '月山招待状（通常時演出）', label: '本は良い', impl: '3否定', type: 'deny', settings: [3] },
-  { cat: '月山招待状（通常時演出）', label: 'すまない', impl: '4否定', type: 'deny', settings: [4] },
-  { cat: '月山招待状（通常時演出）', label: '存分に（金文字）', impl: '4以上濃厚', type: 'only', settings: [4, 5, 6] },
-  { cat: '月山招待状（通常時演出）', label: '特別な夜（虹文字）', impl: '6濃厚', type: 'only', settings: [6] },
+  { cat: '月山招待状（通常時演出）', label: '偶にはディナー', impl: '偶数示唆', kind: 'soft', tier: 'normal', settings: [2, 4, 6] },
+  { cat: '月山招待状（通常時演出）', label: '不思議な香り', impl: '1否定', kind: 'hard', type: 'deny', settings: [1] },
+  { cat: '月山招待状（通常時演出）', label: '活字中毒', impl: '2否定', kind: 'hard', type: 'deny', settings: [2] },
+  { cat: '月山招待状（通常時演出）', label: '本は良い', impl: '3否定', kind: 'hard', type: 'deny', settings: [3] },
+  { cat: '月山招待状（通常時演出）', label: 'すまない', impl: '4否定', kind: 'hard', type: 'deny', settings: [4] },
+  { cat: '月山招待状（通常時演出）', label: '存分に（金文字）', impl: '4以上濃厚', kind: 'hard', type: 'only', settings: [4, 5, 6] },
+  { cat: '月山招待状（通常時演出）', label: '特別な夜（虹文字）', impl: '6濃厚', kind: 'hard', type: 'only', settings: [6] },
 
-  { cat: 'エンディング：レア役カード', label: '銅：鈴屋什造', impl: '1否定', type: 'deny', settings: [1] },
-  { cat: 'エンディング：レア役カード', label: '銅：高槻泉', impl: '2否定', type: 'deny', settings: [2] },
-  { cat: 'エンディング：レア役カード', label: '銅：梟', impl: '3否定', type: 'deny', settings: [3] },
-  { cat: 'エンディング：レア役カード', label: '銅：エト', impl: '4否定', type: 'deny', settings: [4] },
-  { cat: 'エンディング：レア役カード', label: '銀', impl: '3以上濃厚', type: 'only', settings: [3, 4, 5, 6] },
-  { cat: 'エンディング：レア役カード', label: '金', impl: '4以上濃厚', type: 'only', settings: [4, 5, 6] },
-  { cat: 'エンディング：レア役カード', label: '虹', impl: '6濃厚', type: 'only', settings: [6] },
+  { cat: 'エンディング：レア役カード', label: '白カード（弱グループ）', impl: '奇数示唆[弱]', kind: 'soft', tier: 'weak', settings: [1, 3, 5] },
+  { cat: 'エンディング：レア役カード', label: '白カード（強グループ）', impl: '奇数示唆[強]', kind: 'soft', tier: 'strong', settings: [1, 3, 5] },
+  { cat: 'エンディング：レア役カード', label: '青カード（弱グループ）', impl: '偶数示唆[弱]', kind: 'soft', tier: 'weak', settings: [2, 4, 6] },
+  { cat: 'エンディング：レア役カード', label: '青カード（強グループ）', impl: '偶数示唆[強]', kind: 'soft', tier: 'strong', settings: [2, 4, 6] },
+  { cat: 'エンディング：レア役カード', label: '赤カード（弱グループ）', impl: '高設定示唆[弱]', kind: 'soft', tier: 'weak', settings: [4, 5, 6] },
+  { cat: 'エンディング：レア役カード', label: '赤カード（強グループ）', impl: '高設定示唆[強]', kind: 'soft', tier: 'strong', settings: [4, 5, 6] },
+  { cat: 'エンディング：レア役カード', label: '銅：鈴屋什造', impl: '1否定', kind: 'hard', type: 'deny', settings: [1] },
+  { cat: 'エンディング：レア役カード', label: '銅：高槻泉', impl: '2否定', kind: 'hard', type: 'deny', settings: [2] },
+  { cat: 'エンディング：レア役カード', label: '銅：梟', impl: '3否定', kind: 'hard', type: 'deny', settings: [3] },
+  { cat: 'エンディング：レア役カード', label: '銅：エト', impl: '4否定', kind: 'hard', type: 'deny', settings: [4] },
+  { cat: 'エンディング：レア役カード', label: '銀', impl: '3以上濃厚', kind: 'hard', type: 'only', settings: [3, 4, 5, 6] },
+  { cat: 'エンディング：レア役カード', label: '金', impl: '4以上濃厚', kind: 'hard', type: 'only', settings: [4, 5, 6] },
+  { cat: 'エンディング：レア役カード', label: '虹', impl: '6濃厚', kind: 'hard', type: 'only', settings: [6] },
 
-  { cat: '獲得枚数表示', label: '456 OVER', impl: '4以上濃厚', type: 'only', settings: [4, 5, 6] },
-  { cat: '獲得枚数表示', label: '666 OVER', impl: '6濃厚', type: 'only', settings: [6] },
-  { cat: '獲得枚数表示', label: '1000-7 OVER', impl: '6濃厚', type: 'only', settings: [6] },
+  { cat: '獲得枚数表示', label: '456 OVER', impl: '4以上濃厚', kind: 'hard', type: 'only', settings: [4, 5, 6] },
+  { cat: '獲得枚数表示', label: '666 OVER', impl: '6濃厚', kind: 'hard', type: 'only', settings: [6] },
+  { cat: '獲得枚数表示', label: '1000-7 OVER', impl: '6濃厚', kind: 'hard', type: 'only', settings: [6] },
 ];
-
-// "示唆"のみ（濃厚/否定ではない）要素 — ハード除外はせず、出現回数と［弱/強］の強さに応じてわずかに重みを加えるだけ
-const SOFT_ITEMS = [
-  { cat: 'AT終了画面', label: '亜門鋼太朗＆真戸暁', impl: '奇数示唆', tier: 'normal', settings: [1, 3, 5] },
-  { cat: 'AT終了画面', label: '鈴屋什造＆篠原幸紀', impl: '偶数示唆', tier: 'normal', settings: [2, 4, 6] },
-  { cat: 'AT終了画面', label: '笛口雛実＆笛口リョーコ', impl: '高設定示唆[弱]', tier: 'weak', settings: [4, 5, 6] },
-  { cat: 'AT終了画面', label: '四方蓮示＆イトリ＆ウタ', impl: '高設定示唆[強]', tier: 'strong', settings: [4, 5, 6] },
-
-  { cat: '月山招待状（通常時演出）', label: '偶にはディナー', impl: '偶数示唆', tier: 'normal', settings: [2, 4, 6] },
-
-  { cat: 'エンディング：レア役カード', label: '白カード（弱グループ）', impl: '奇数示唆[弱]', tier: 'weak', settings: [1, 3, 5] },
-  { cat: 'エンディング：レア役カード', label: '白カード（強グループ）', impl: '奇数示唆[強]', tier: 'strong', settings: [1, 3, 5] },
-  { cat: 'エンディング：レア役カード', label: '青カード（弱グループ）', impl: '偶数示唆[弱]', tier: 'weak', settings: [2, 4, 6] },
-  { cat: 'エンディング：レア役カード', label: '青カード（強グループ）', impl: '偶数示唆[強]', tier: 'strong', settings: [2, 4, 6] },
-  { cat: 'エンディング：レア役カード', label: '赤カード（弱グループ）', impl: '高設定示唆[弱]', tier: 'weak', settings: [4, 5, 6] },
-  { cat: 'エンディング：レア役カード', label: '赤カード（強グループ）', impl: '高設定示唆[強]', tier: 'strong', settings: [4, 5, 6] },
-];
-const TIER_WEIGHT = { weak: 0.2, normal: 0.35, strong: 0.5 }; // 1回出現あたりの重み（対数尤度換算）。あくまで参考程度に抑えるための小さめの値
+const TIER_WEIGHT = { weak: 0.2, normal: 0.35, strong: 0.5 }; // 示唆1回出現あたりの重み（対数尤度換算）。あくまで参考程度に抑えるための小さめの値
 const SOFT_CAP = 3; // 同じ示唆を何度数えても、影響はこの回数分でカンスト
 
-const totalGInput = document.getElementById('totalG');
-const reminiscenceInput = document.getElementById('reminiscence');
-const ooguiInput = document.getElementById('oogui');
+const numericInputs = [
+  'totalG', 'reminiscence', 'oogui',
+  'uraAtN', 'uraAtK', 'ura100N', 'ura100K', 'ura200N', 'ura200K',
+].map((id) => document.getElementById(id));
 const resultBars = document.getElementById('resultBars');
 const summaryEl = document.getElementById('summary');
 
@@ -329,7 +359,7 @@ function buildChips(container, items) {
     chip.innerHTML = `
       <button type="button" class="dec" aria-label="減らす">－</button>
       <span class="label">${item.label}</span>
-      <span class="impl">${item.impl}</span>
+      <span class="impl ${item.kind}">${item.impl}</span>
       <span class="count">0</span>
       <button type="button" class="inc" aria-label="増やす">＋</button>
     `;
@@ -349,8 +379,7 @@ function buildChips(container, items) {
     rowEl.appendChild(chip);
   });
 }
-buildChips(document.getElementById('hardChips'), HARD_ITEMS);
-buildChips(document.getElementById('softChips'), SOFT_ITEMS);
+buildChips(document.getElementById('itemChips'), ITEMS);
 
 function logBinomLikelihood(n, k, p) {
   const pp = Math.min(Math.max(p, 1e-9), 1 - 1e-9);
@@ -359,8 +388,8 @@ function logBinomLikelihood(n, k, p) {
 
 function computeCandidateSettings() {
   let candidates = new Set([1, 2, 3, 4, 5, 6]);
-  HARD_ITEMS.forEach((item) => {
-    if (item.count <= 0) return;
+  ITEMS.forEach((item) => {
+    if (item.kind !== 'hard' || item.count <= 0) return;
     if (item.type === 'only') {
       candidates = new Set([...candidates].filter((s) => item.settings.includes(s)));
     } else if (item.type === 'deny') {
@@ -371,17 +400,22 @@ function computeCandidateSettings() {
 }
 
 function render() {
-  const n = Math.max(0, parseInt(totalGInput.value, 10) || 0);
-  const k1 = Math.max(0, parseInt(reminiscenceInput.value, 10) || 0);
-  const k2 = Math.max(0, parseInt(ooguiInput.value, 10) || 0);
+  const [n, k1, k2, uraAtN, uraAtK, ura100N, ura100K, ura200N, ura200K] =
+    numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
   const candidates = computeCandidateSettings();
-  const hasSoftEvidence = SOFT_ITEMS.some((item) => item.count > 0);
+  const hasNumericEvidence = n > 0 || uraAtN > 0 || ura100N > 0 || ura200N > 0;
+  const softItems = ITEMS.filter((item) => item.kind === 'soft');
+  const hasSoftEvidence = softItems.some((item) => item.count > 0);
 
   const logLikelihoods = [1, 2, 3, 4, 5, 6].map((s) => {
     if (!candidates.has(s)) return -Infinity;
     const i = s - 1;
-    let l = n > 0 ? logBinomLikelihood(n, k1, P_REMINISCENCE[i]) + logBinomLikelihood(n, k2, P_OOGUI[i]) : 0;
-    SOFT_ITEMS.forEach((item) => {
+    let l = 0;
+    if (n > 0) l += logBinomLikelihood(n, k1, P_REMINISCENCE[i]) + logBinomLikelihood(n, k2, P_OOGUI[i]);
+    if (uraAtN > 0) l += logBinomLikelihood(uraAtN, uraAtK, P_URA_AT_CHOKKOU[i]);
+    if (ura100N > 0) l += logBinomLikelihood(ura100N, ura100K, P_URA_AT_100G[i]);
+    if (ura200N > 0) l += logBinomLikelihood(ura200N, ura200K, P_URA_AT_200G[i]);
+    softItems.forEach((item) => {
       if (item.count > 0 && item.settings.includes(s)) {
         l += Math.min(item.count, SOFT_CAP) * TIER_WEIGHT[item.tier];
       }
@@ -407,20 +441,20 @@ function render() {
     resultBars.appendChild(row);
   });
 
-  const noDataAtAll = candidates.size === 6 && n === 0 && !hasSoftEvidence;
+  const noDataAtAll = candidates.size === 6 && !hasNumericEvidence && !hasSoftEvidence;
   if (candidates.size === 0) {
     summaryEl.innerHTML = '⚠️ 濃厚・否定要素同士が矛盾しています。カウントを見直してください。';
   } else if (noDataAtAll) {
-    summaryEl.innerHTML = 'まだデータがありません。①に数値を入力するか、②③で出現した演出をカウントしてください。';
+    summaryEl.innerHTML = 'まだデータがありません。①に数値を入力するか、②で出現した演出をカウントしてください。';
   } else {
     const best = probs.indexOf(Math.max(...probs));
     const list = [...candidates].sort((a, b) => a - b).join(', ');
-    summaryEl.innerHTML = `現在の候補: <strong>設定${list}</strong>${n > 0 || hasSoftEvidence ? ` ／ 最有力: <strong>設定${best + 1}</strong>` : ''}` +
-      (hasSoftEvidence ? '<span class="caveat">※「③ 示唆要素」を反映していますが、あくまで参考程度の重みです。</span>' : '');
+    summaryEl.innerHTML = `現在の候補: <strong>設定${list}</strong>${hasNumericEvidence || hasSoftEvidence ? ` ／ 最有力: <strong>設定${best + 1}</strong>` : ''}` +
+      (hasSoftEvidence ? '<span class="caveat">※斜体で示した「示唆」を反映していますが、あくまで参考程度の重みです。</span>' : '');
   }
 }
 
-[totalGInput, reminiscenceInput, ooguiInput].forEach((el) => el.addEventListener('input', render));
+numericInputs.forEach((el) => el.addEventListener('input', render));
 render();
 </script>
 </body>
