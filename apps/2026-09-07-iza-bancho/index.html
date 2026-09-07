@@ -410,6 +410,16 @@ function logBinomLikelihood(n, k, p) {
   return k * Math.log(pp) + (n - k) * Math.log(1 - pp);
 }
 
+// Blank fields must mean "no data" (skip that channel), not "0 observed" — leaving one
+// k-field blank in a shared-総G数 group should never be silently read as "confirmed zero
+// occurrences in N games", which would badly bias channels with a non-negligible rate
+// (like 共通ベルA・弱チェリー, both around 1.3-1.7%) even when the field was simply left
+// untouched.
+function parseField(el) {
+  const v = el.value.trim();
+  return v === '' ? null : Math.max(0, parseInt(v, 10) || 0);
+}
+
 function computeCandidateSettings() {
   let candidates = new Set([1, 2, 3, 4, 5, 6]);
   ITEMS.forEach((item) => {
@@ -425,12 +435,17 @@ function computeCandidateSettings() {
 
 function render() {
   const [
-    n, commonBellK, weakCherryK,
-    akai7K, ao7K,
-    hatsuAtariK,
-    toukenMaxN, toukenAtK,
-    zetchoN, meemoK,
-  ] = numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
+    nRaw, commonBellKRaw, weakCherryKRaw,
+    akai7KRaw, ao7KRaw,
+    hatsuAtariKRaw,
+    toukenMaxNRaw, toukenAtKRaw,
+    zetchoNRaw, meemoKRaw,
+  ] = numericInputs.map(parseField);
+  const n = nRaw || 0;
+  const toukenMaxN = toukenMaxNRaw || 0;
+  const toukenAtK = toukenAtKRaw || 0;
+  const zetchoN = zetchoNRaw || 0;
+  const meemoK = meemoKRaw || 0;
   const candidates = computeCandidateSettings();
   const hasNumericEvidence = n > 0 || toukenMaxN > 0 || zetchoN > 0;
   const softItems = ITEMS.filter((item) => item.kind === 'soft');
@@ -440,13 +455,11 @@ function render() {
     if (!candidates.has(s)) return -Infinity;
     const i = s - 1;
     let l = 0;
-    if (n > 0) {
-      l += logBinomLikelihood(n, commonBellK, P_COMMON_BELL[i]);
-      l += logBinomLikelihood(n, weakCherryK, P_WEAK_CHERRY[i]);
-      l += logBinomLikelihood(n, akai7K, P_AKAI7_CHOKUGEKI[i]);
-      l += logBinomLikelihood(n, ao7K, P_AO7_CHOKUGEKI[i]);
-      l += logBinomLikelihood(n, hatsuAtariK, P_HATSUATARI[i]);
-    }
+    if (n > 0 && commonBellKRaw !== null) l += logBinomLikelihood(n, commonBellKRaw, P_COMMON_BELL[i]);
+    if (n > 0 && weakCherryKRaw !== null) l += logBinomLikelihood(n, weakCherryKRaw, P_WEAK_CHERRY[i]);
+    if (n > 0 && akai7KRaw !== null) l += logBinomLikelihood(n, akai7KRaw, P_AKAI7_CHOKUGEKI[i]);
+    if (n > 0 && ao7KRaw !== null) l += logBinomLikelihood(n, ao7KRaw, P_AO7_CHOKUGEKI[i]);
+    if (n > 0 && hatsuAtariKRaw !== null) l += logBinomLikelihood(n, hatsuAtariKRaw, P_HATSUATARI[i]);
     if (toukenMaxN > 0) l += logBinomLikelihood(toukenMaxN, toukenAtK, P_TOUKEN_AT[i]);
     if (zetchoN > 0) l += logBinomLikelihood(zetchoN, meemoK, P_MEEMO_ZANSHINGU[i]);
     softItems.forEach((item) => {
