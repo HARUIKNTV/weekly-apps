@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>甲鉄城のカバネリ 海門決戦 設定判別ツール</title>
-<meta name="description" content="スマスロ「甲鉄城のカバネリ 海門（うなと）決戦」の設定判別ツール。下段ベル確率などの数値データと、DMMぱちタウンの設定判別・推測ポイントに基づく示唆演出の出現回数から設定期待度を算出します。" />
+<meta name="description" content="スマスロ「甲鉄城のカバネリ 海門（うなと）決戦」の設定判別ツール。下段ベル確率・ボーナス初当たり確率・ST確率・駿城ポイント・周期別ボーナス当選率など数値データを細かく分けて入力でき、DMMぱちタウン／一撃の設定判別ポイントに基づく示唆演出の出現回数と合わせて設定期待度を算出します。" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
@@ -242,6 +242,20 @@
       </label>
     </div>
 
+    <div class="field-group-label">ボーナス初当たり確率（総G数は上と共通）</div>
+    <div class="field-row">
+      <label class="field">ボーナス初当たり回数
+        <input type="number" id="bonusHitK" min="0" placeholder="例: 6" />
+      </label>
+    </div>
+
+    <div class="field-group-label">ST確率（総G数は上と共通）</div>
+    <div class="field-row">
+      <label class="field">ST当選回数
+        <input type="number" id="stK" min="0" placeholder="例: 4" />
+      </label>
+    </div>
+
     <div class="field-group-label">シングルチャンス目の3000pt獲得率</div>
     <div class="field-row">
       <label class="field">シングルチャンス目成立回数
@@ -294,8 +308,8 @@
   </div>
 
   <p class="source">
-    参考データ: <a href="https://p-town.dmm.com/machines/4930#anc-point" target="_blank" rel="noopener">DMMぱちタウン「甲鉄城のカバネリ 海門（うなと）決戦」設定判別・推測ポイント</a>（2026/09/06更新）／
-    <a href="https://1geki.jp/slot/l_kabaneri2/0/" target="_blank" rel="noopener">一撃「カバネリ」設定差・設定示唆まとめ</a>（2026/09/04更新）
+    参考データ: <a href="https://p-town.dmm.com/machines/4930#anc-point" target="_blank" rel="noopener">DMMぱちタウン「甲鉄城のカバネリ 海門（うなと）決戦」設定判別・推測ポイント</a>（2026/09/07更新）／
+    <a href="https://1geki.jp/slot/l_kabaneri2/0/" target="_blank" rel="noopener">一撃「カバネリ」設定差・設定示唆まとめ</a>（2026/09/04更新、ボーナス初当たり/ST確率を追加採用）
   </p>
 
   <div class="disclaimer">
@@ -311,6 +325,8 @@
 <script>
 // per-setting probability — DMMぱちタウン「甲鉄城のカバネリ 海門決戦」設定判別・推測ポイント各表より
 const P_BELL          = [1/121.1, 1/114.4, 1/112.8, 1/106.2, 1/104.2, 1/99.1];
+const P_BONUS_HIT     = [1/254.2, 1/242.3, 1/239.6, 1/214.0, 1/203.2, 1/195.1]; // ボーナス初当たり確率（一撃「ボーナス初当たり/ST確率」より）
+const P_ST            = [1/422.5, 1/405.9, 1/398.7, 1/357.2, 1/332.6, 1/318.5]; // ST確率（同上）
 const P_3000PT        = [0.012, 0.020, 0.020, 0.020, 0.020, 0.023];
 const P_3RD_CYCLE_BONUS = [0.184, 0.238, 0.211, 0.285, 0.324, 0.371];
 const P_4TH_CYCLE_BONUS = [0.336, 0.352, 0.363, 0.402, 0.434, 0.469]; // 4周期到達時のボーナス当選期待度（一撃調べ）
@@ -360,7 +376,7 @@ const ITEMS = [
 const TIER_WEIGHT = { weak: 0.2, normal: 0.35, strong: 0.5 };
 const SOFT_CAP = 3;
 
-const numericInputs = ['totalG', 'bellN', 'chanceN', 'chanceK', 'cycleN', 'cycleK', 'cycle4N', 'cycle4K'].map((id) => document.getElementById(id));
+const numericInputs = ['totalG', 'bellN', 'bonusHitK', 'stK', 'chanceN', 'chanceK', 'cycleN', 'cycleK', 'cycle4N', 'cycle4K'].map((id) => document.getElementById(id));
 const resultBars = document.getElementById('resultBars');
 const summaryEl = document.getElementById('summary');
 
@@ -425,7 +441,7 @@ function computeCandidateSettings() {
 }
 
 function render() {
-  const [n, bellK, chanceN, chanceK, cycleN, cycleK, cycle4N, cycle4K] = numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
+  const [n, bellK, bonusHitK, stK, chanceN, chanceK, cycleN, cycleK, cycle4N, cycle4K] = numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
   const candidates = computeCandidateSettings();
   const hasNumericEvidence = n > 0 || chanceN > 0 || cycleN > 0 || cycle4N > 0;
   const softItems = ITEMS.filter((item) => item.kind === 'soft');
@@ -435,7 +451,11 @@ function render() {
     if (!candidates.has(s)) return -Infinity;
     const i = s - 1;
     let l = 0;
-    if (n > 0) l += logBinomLikelihood(n, bellK, P_BELL[i]);
+    if (n > 0) {
+      l += logBinomLikelihood(n, bellK, P_BELL[i]);
+      l += logBinomLikelihood(n, bonusHitK, P_BONUS_HIT[i]);
+      l += logBinomLikelihood(n, stK, P_ST[i]);
+    }
     if (chanceN > 0) l += logBinomLikelihood(chanceN, chanceK, P_3000PT[i]);
     if (cycleN > 0) l += logBinomLikelihood(cycleN, cycleK, P_3RD_CYCLE_BONUS[i]);
     if (cycle4N > 0) l += logBinomLikelihood(cycle4N, cycle4K, P_4TH_CYCLE_BONUS[i]);

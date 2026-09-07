@@ -232,7 +232,7 @@
     <h2>① 数値データ</h2>
     <p class="hint">わかる範囲で入力するほど精度が上がります。空欄（0）の項目は計算に影響しません。</p>
 
-    <div class="field-group-label">CZ確率（アラガミ防衛戦＋殲滅モード合算）／AT「アラガミバースト」出現率</div>
+    <div class="field-group-label">CZ確率（アラガミ防衛戦＋殲滅モード合算）</div>
     <div class="field-row">
       <label class="field">総G数
         <input type="number" id="totalG" min="0" placeholder="例: 1500" />
@@ -240,12 +240,16 @@
       <label class="field">CZ当選回数
         <input type="number" id="czN" min="0" placeholder="例: 4" />
       </label>
+    </div>
+
+    <div class="field-group-label">AT「アラガミバースト」出現率（総G数は上と共通・一撃調べ）</div>
+    <div class="field-row">
       <label class="field">AT当選回数（アラガミバースト）
         <input type="number" id="atN" min="0" placeholder="例: 3" />
       </label>
     </div>
 
-    <div class="field-group-label">通常時レア役契機のCZ当選率</div>
+    <div class="field-group-label">弱チェリー契機のCZ当選率（通常時）</div>
     <div class="field-row">
       <label class="field">弱チェリー成立回数
         <input type="number" id="weakCherryN" min="0" placeholder="例: 8" />
@@ -254,7 +258,9 @@
         <input type="number" id="weakCherryK" min="0" placeholder="例: 0" />
       </label>
     </div>
-    <div class="field-row" style="margin-top:8px">
+
+    <div class="field-group-label">スイカ契機のCZ当選率（通常時）</div>
+    <div class="field-row">
       <label class="field">スイカ成立回数
         <input type="number" id="suikaN" min="0" placeholder="例: 8" />
       </label>
@@ -262,7 +268,9 @@
         <input type="number" id="suikaK" min="0" placeholder="例: 0" />
       </label>
     </div>
-    <div class="field-row" style="margin-top:8px">
+
+    <div class="field-group-label">チャンス目契機のCZ当選率（通常時）</div>
+    <div class="field-row">
       <label class="field">チャンス目成立回数
         <input type="number" id="chanceN" min="0" placeholder="例: 5" />
       </label>
