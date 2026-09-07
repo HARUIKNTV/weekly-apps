@@ -379,6 +379,15 @@ function logBinomLikelihood(n, k, p) {
   return k * Math.log(pp) + (n - k) * Math.log(1 - pp);
 }
 
+// Blank fields must mean "no data" (skip that channel), not "0 observed" — leaving one
+// k-field blank in a shared-総G数 group should never be silently read as "confirmed zero
+// occurrences in N games", which would badly bias channels with a non-negligible rate
+// even when the field was simply left untouched.
+function parseField(el) {
+  const v = el.value.trim();
+  return v === '' ? null : Math.max(0, parseInt(v, 10) || 0);
+}
+
 function computeCandidateSettings() {
   let candidates = new Set([1, 2, 3, 4, 5, 6]);
   ITEMS.forEach((item) => {
@@ -393,7 +402,8 @@ function computeCandidateSettings() {
 }
 
 function render() {
-  const [n, enenLoopK, bonusK] = numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
+  const [nRaw, enenLoopKRaw, bonusKRaw] = numericInputs.map(parseField);
+  const n = nRaw || 0;
   const candidates = computeCandidateSettings();
   const hasNumericEvidence = n > 0;
   const softItems = ITEMS.filter((item) => item.kind === 'soft');
@@ -403,8 +413,8 @@ function render() {
     if (!candidates.has(s)) return -Infinity;
     const i = s - 1;
     let l = 0;
-    if (n > 0) l += logBinomLikelihood(n, enenLoopK, P_ENEN_LOOP[i]);
-    if (n > 0) l += logBinomLikelihood(n, bonusK, P_BONUS[i]);
+    if (n > 0 && enenLoopKRaw !== null) l += logBinomLikelihood(n, enenLoopKRaw, P_ENEN_LOOP[i]);
+    if (n > 0 && bonusKRaw !== null) l += logBinomLikelihood(n, bonusKRaw, P_BONUS[i]);
     softItems.forEach((item) => {
       if (item.count > 0 && item.settings.includes(s)) {
         l += Math.min(item.count, SOFT_CAP) * TIER_WEIGHT[item.tier];

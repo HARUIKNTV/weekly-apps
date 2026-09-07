@@ -402,6 +402,15 @@ function logBinomLikelihood(n, k, p) {
   return k * Math.log(pp) + (n - k) * Math.log(1 - pp);
 }
 
+// Blank fields must mean "no data" (skip that channel), not "0 observed" — leaving one
+// k-field blank in a shared-総G数 group should never be silently read as "confirmed zero
+// occurrences in N games", which would badly bias channels with a non-negligible rate
+// even when the field was simply left untouched.
+function parseField(el) {
+  const v = el.value.trim();
+  return v === '' ? null : Math.max(0, parseInt(v, 10) || 0);
+}
+
 function computeCandidateSettings() {
   let candidates = new Set([1, 2, 3, 4, 5, 6]);
   ITEMS.forEach((item) => {
@@ -416,7 +425,12 @@ function computeCandidateSettings() {
 }
 
 function render() {
-  const [n, czK, atN, cherryN, cherryK, stageN, stageK] = numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
+  const [nRaw, czKRaw, atNRaw, cherryNRaw, cherryKRaw, stageNRaw, stageKRaw] = numericInputs.map(parseField);
+  const n = nRaw || 0;
+  const cherryN = cherryNRaw || 0;
+  const cherryK = cherryKRaw || 0;
+  const stageN = stageNRaw || 0;
+  const stageK = stageKRaw || 0;
   const candidates = computeCandidateSettings();
   const hasNumericEvidence = n > 0 || cherryN > 0 || stageN > 0;
   const softItems = ITEMS.filter((item) => item.kind === 'soft');
@@ -426,8 +440,8 @@ function render() {
     if (!candidates.has(s)) return -Infinity;
     const i = s - 1;
     let l = 0;
-    if (n > 0) l += logBinomLikelihood(n, czK, P_CZ[i]);
-    if (n > 0) l += logBinomLikelihood(n, atN, P_AT[i]);
+    if (n > 0 && czKRaw !== null) l += logBinomLikelihood(n, czKRaw, P_CZ[i]);
+    if (n > 0 && atNRaw !== null) l += logBinomLikelihood(n, atNRaw, P_AT[i]);
     if (cherryN > 0) l += logBinomLikelihood(cherryN, cherryK, P_STRONG_CHERRY[i]);
     if (stageN > 0) l += logBinomLikelihood(stageN, stageK, P_STAGE_KATSU[i]);
     softItems.forEach((item) => {

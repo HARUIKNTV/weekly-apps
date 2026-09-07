@@ -435,6 +435,15 @@ function logBinomLikelihood(n, k, p) {
   return k * Math.log(pp) + (n - k) * Math.log(1 - pp);
 }
 
+// Blank fields must mean "no data" (skip that channel), not "0 observed" — leaving one
+// k-field blank in a shared-総G数 group should never be silently read as "confirmed zero
+// occurrences in N games", which would badly bias channels with a non-negligible rate
+// even when the field was simply left untouched.
+function parseField(el) {
+  const v = el.value.trim();
+  return v === '' ? null : Math.max(0, parseInt(v, 10) || 0);
+}
+
 function computeCandidateSettings() {
   let candidates = new Set([1, 2, 3, 4, 5, 6]);
   ITEMS.forEach((item) => {
@@ -449,7 +458,16 @@ function computeCandidateSettings() {
 }
 
 function render() {
-  const [n, czK, atK, wcN, wcK, suN, suK, chN, chK, scN, scK] = numericInputs.map((el) => Math.max(0, parseInt(el.value, 10) || 0));
+  const [nRaw, czKRaw, atKRaw, wcNRaw, wcKRaw, suNRaw, suKRaw, chNRaw, chKRaw, scNRaw, scKRaw] = numericInputs.map(parseField);
+  const n = nRaw || 0;
+  const wcN = wcNRaw || 0;
+  const wcK = wcKRaw || 0;
+  const suN = suNRaw || 0;
+  const suK = suKRaw || 0;
+  const chN = chNRaw || 0;
+  const chK = chKRaw || 0;
+  const scN = scNRaw || 0;
+  const scK = scKRaw || 0;
   const candidates = computeCandidateSettings();
   const hasNumericEvidence = n > 0 || wcN > 0 || suN > 0 || chN > 0 || scN > 0;
   const softItems = ITEMS.filter((item) => item.kind === 'soft');
@@ -459,8 +477,8 @@ function render() {
     if (!candidates.has(s)) return -Infinity;
     const i = s - 1;
     let l = 0;
-    if (n > 0) l += logBinomLikelihood(n, czK, P_CZ[i]);
-    if (n > 0) l += logBinomLikelihood(n, atK, P_AT[i]);
+    if (n > 0 && czKRaw !== null) l += logBinomLikelihood(n, czKRaw, P_CZ[i]);
+    if (n > 0 && atKRaw !== null) l += logBinomLikelihood(n, atKRaw, P_AT[i]);
     if (wcN > 0) l += logBinomLikelihood(wcN, wcK, P_WEAK_CHERRY_CZ[i]);
     if (suN > 0) l += logBinomLikelihood(suN, suK, P_SUIKA_CZ[i]);
     if (chN > 0) l += logBinomLikelihood(chN, chK, P_CHANCE_CZ[i]);
