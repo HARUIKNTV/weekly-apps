@@ -55,6 +55,7 @@ const html = `<!doctype html>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7523687500134096" crossorigin="anonymous"></script>
 <title>${SITE_NAME}</title>
 <meta name="description" content="${escapeHtml(description)}" />
 <link rel="canonical" href="${SITE_URL}" />
