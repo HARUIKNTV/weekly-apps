@@ -5,7 +5,7 @@ const manifestPath = path.join(__dirname, "..", "manifest.json");
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 const history = manifest.history || [];
 
-const SITE_NAME = "スロ設定判別ラボ";
+const SITE_NAME = "スロット設定判別";
 const SITE_URL = "https://haruikntv.github.io/weekly-apps/";
 
 function escapeHtml(s) {
@@ -102,25 +102,21 @@ ${JSON.stringify(
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #14100f;
-    --bg2: #1d1614;
-    --card-bg: #241b18;
-    --line: #3a2b26;
-    --ink: #f2e9e4;
-    --sub: #b8a89f;
-    --accent: #c8102e;
-    --accent2: #d4a017;
+    --bg: #ffffff;
+    --bg2: #f4f4f5;
+    --card-bg: #ffffff;
+    --line: #e4e4e7;
+    --ink: #18181b;
+    --sub: #6b6b70;
+    --accent: #d6202c;
+    --accent2: #b3161f;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     font-family: 'Zen Kaku Gothic New', system-ui, sans-serif;
     color: var(--ink);
-    background:
-      radial-gradient(circle at 20% 0%, #2a1a1a 0%, transparent 45%),
-      radial-gradient(circle at 100% 100%, #201a10 0%, transparent 50%),
-      var(--bg);
-    background-attachment: fixed;
+    background: var(--bg);
     overflow-x: hidden;
     word-break: keep-all;
     overflow-wrap: break-word;
@@ -178,7 +174,7 @@ ${JSON.stringify(
     display: flex;
     align-items: center;
     justify-content: center;
-    background: repeating-linear-gradient(45deg, #1a1412, #1a1412 10px, #201917 10px, #201917 20px);
+    background: repeating-linear-gradient(45deg, #f4f4f5, #f4f4f5 10px, #ececef 10px, #ececef 20px);
     border: 2px dashed var(--line);
     border-radius: 14px;
     color: var(--sub);
