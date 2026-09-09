@@ -30,7 +30,15 @@ function adSlot(sizeLabel, extraClass) {
       </div>`;
 }
 
-const sorted = history.slice().reverse();
+// Sort by date descending (newest first); within the same date, the entry
+// added later to manifest.json (higher array index) is shown first.
+const sorted = history
+  .map((app, i) => ({ app, i }))
+  .sort((a, b) => {
+    const dateCompare = (b.app.date || "").localeCompare(a.app.date || "");
+    return dateCompare !== 0 ? dateCompare : b.i - a.i;
+  })
+  .map((x) => x.app);
 const description = history.length
   ? `パチスロの公開設定差データをもとにした設定判別ツール集。現在${history.length}機種のツールを公開中。`
   : "パチスロの公開設定差データをもとに、機種ごとの設定判別ツールを毎週追加していくサイトです。";
