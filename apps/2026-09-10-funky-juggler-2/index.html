@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7523687500134096" crossorigin="anonymous"></script>
+<title>ファンキージャグラー2 設定判別ツール</title>
+<meta name="description" content="「ファンキージャグラー2」の設定判別ツール。AT・CZ・ストーリー演出のないA-type（ジャグラー系）機種のため、ブドウ確率・BIG確率・REG確率という3つの独立した二項尤度チャンネルから設定期待度を算出します。DMMぱちタウン・一撃(1geki.jp)の解析データに基づく判別ツールです（チェリー確率は設定差がほぼ見られないため不採用）。" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg2: #f4f4f5;
+    --card: #ffffff;
+    --line: #e4e4e7;
+    --ink: #18181b;
+    --sub: #6b6b70;
+    --accent: #d6202c;
+    --accent2: #b3161f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Zen Kaku Gothic New', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  a { color: var(--accent2); }
+  main { max-width: 780px; margin: 0 auto; padding: 24px 16px 48px; }
+
+  header { text-align: center; margin-bottom: 18px; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+    border-radius: 999px;
+    padding: 3px 12px;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: clamp(22px, 5vw, 30px);
+    font-weight: 900;
+    margin: 0 0 6px;
+    letter-spacing: 0.02em;
+  }
+  header p { color: var(--sub); font-size: 13px; margin: 0; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .card h2 {
+    font-size: 15px;
+    margin: 0 0 3px;
+  }
+  .card .hint { color: var(--sub); font-size: 12px; margin: 0 0 10px; }
+
+  .field-group-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 12px 0 6px;
+  }
+  .field-group-label:first-of-type { margin-top: 0; }
+  .field-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  label.field { display: block; font-size: 12.5px; color: var(--sub); }
+  label.field input {
+    display: block;
+    width: 100%;
+    margin-top: 5px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--ink);
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+  label.field input:focus { outline: 2px solid var(--accent2); outline-offset: 1px; }
+
+  .subhead {
+    font-size: 11.5px;
+    color: var(--sub);
+    margin: 0 0 8px;
+  }
+  .subhead b { color: var(--accent2); font-weight: 700; }
+
+  /* ---------- category labels + compact counter chips ---------- */
+  .cat-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 10px 0 5px;
+  }
+  .cat-label:first-of-type { margin-top: 0; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2px; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 4px 3px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .chip.active { border-color: var(--accent2); }
+  .chip .label { max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
+  .chip .impl { font-size: 10.5px; margin-left: 2px; }
+  .chip .impl.hard { color: var(--accent2); }
+  .chip .impl.soft { color: var(--sub); font-style: italic; }
+  .chip button {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+  }
+  .chip button:active { background: var(--accent); border-color: var(--accent); }
+  .chip .count {
+    min-width: 14px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .result-bars { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
+  .bar-row { display: grid; grid-template-columns: 48px 1fr 52px; align-items: center; gap: 8px; }
+  .bar-row .num { font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .bar-track {
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    height: 16px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 999px;
+    transition: width 0.25s ease;
+  }
+  .bar-fill.excluded { background: #e4e4e7; }
+  .bar-row .pct { text-align: right; font-variant-numeric: tabular-nums; font-size: 12px; color: var(--sub); }
+
+  .summary {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--bg2);
+    border-left: 3px solid var(--accent2);
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .summary strong { color: var(--accent2); }
+  .summary .caveat { display: block; margin-top: 4px; color: var(--sub); font-size: 11px; }
+
+  .source {
+    font-size: 11.5px;
+    color: var(--sub);
+    text-align: center;
+    margin-top: 18px;
+  }
+  .disclaimer {
+    font-size: 11px;
+    color: var(--sub);
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-top: 14px;
+  }
+  footer { text-align: center; margin-top: 18px; font-size: 12px; }
+  footer a { color: var(--sub); }
+
+  /* ---------- ad slots ---------- */
+  .ad-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: repeating-linear-gradient(45deg, #f4f4f5, #f4f4f5 10px, #ececef 10px, #ececef 20px);
+    border: 2px dashed var(--line);
+    border-radius: 14px;
+    color: var(--sub);
+    margin: 0 auto 14px;
+  }
+  .ad-slot-inner { text-align: center; }
+  .ad-slot-label { display: block; font-size: 12px; letter-spacing: 0.1em; }
+  .ad-slot-size { display: block; font-size: 10.5px; opacity: 0.7; }
+  .ad-banner { max-width: 728px; height: 90px; }
+  .ad-rect { max-width: 300px; height: 250px; }
+</style>
+</head>
+<body>
+<main>
+
+  <header>
+    <span class="eyebrow">設定判別ツール</span>
+    <h1>🕺 ファンキージャグラー2 設定判別</h1>
+    <p>ブドウ・BIG・REGの出現回数から、二項分布の尤度計算で設定期待度を算出します。</p>
+  </header>
+
+  <div class="ad-slot ad-banner">
+    <div class="ad-slot-inner">
+      <span class="ad-slot-label">広告スペース</span>
+      <span class="ad-slot-size">728 x 90</span>
+    </div>
+    <!-- AdSense/other ad network snippet goes here. See README.md "広告の設置について". -->
+  </div>
+
+  <div class="card">
+    <h2>① 数値データ</h2>
+    <p class="hint">わかる範囲で入力するほど精度が上がります。空欄の項目は「データなし」として扱われ、計算に含まれません（0を入力した場合のみ「0回」として扱われます）。</p>
+
+    <div class="field-group-label">総G数（共通の分母）</div>
+    <div class="field-row">
+      <label class="field">通常時総G数
+        <input type="number" id="totalG" min="0" placeholder="例: 6000" />
+      </label>
+    </div>
+
+    <div class="field-group-label">小役・ボーナス成立回数（上の総G数に対する回数）</div>
+    <div class="field-row">
+      <label class="field">ブドウ成立回数
+        <input type="number" id="budouK" min="0" placeholder="例: 1020" />
+      </label>
+      <label class="field">BIG当選回数
+        <input type="number" id="bigK" min="0" placeholder="例: 24" />
+      </label>
+      <label class="field">REG当選回数
+        <input type="number" id="regK" min="0" placeholder="例: 15" />
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>② 判別要素</h2>
+    <p class="subhead">本機は<b>A-type（ジャグラー系）機種</b>のため、AT・CZ・ストーリー性のある専用演出は存在しません。</p>
+    <div class="disclaimer" style="margin-top: 0;">
+      A-type機種のため、数値データによる判別が基本となります。プレミアム演出（フリーズ・キャラ成立音の変化など）はいずれも出目上「大当り濃厚」を示す演出であり、設定推測のための「示唆」演出は搭載されていません。設定を絞り込みたい場合は①のブドウ・BIG・REGの数値データを可能な限り多く入力してください。
+    </div>
+  </div>
+
+  <div class="ad-slot ad-rect" style="margin: 0 auto 14px;">
+    <div class="ad-slot-inner">
+      <span class="ad-slot-label">広告スペース</span>
+      <span class="ad-slot-size">300 x 250</span>
+    </div>
+    <!-- AdSense/other ad network snippet goes here. See README.md "広告の設置について". -->
+  </div>
+
+  <div class="card">
+    <h2>③ 結果</h2>
+    <div class="result-bars" id="resultBars"></div>
+    <div class="summary" id="summary"></div>
+  </div>
+
+  <p class="source">
+    参考データ: <a href="https://p-town.dmm.com/machines/3961#anc-point" target="_blank" rel="noopener">DMMぱちタウン「ファンキージャグラー2」設定判別・推測ポイント</a>（2026/08/06更新）／
+    <a href="https://1geki.jp/slot/s_funkyjuggler2/0/" target="_blank" rel="noopener">一撃「ファンキージャグラー2（ファンジャグ2）」設定差・設定判別要素まとめ</a>（2026/05/03更新）
+  </p>
+
+  <div class="disclaimer">
+    ※本ツールは公開されている設定差データをもとにした期待値の目安を計算するファンメイド計算機であり、実際の設定を保証するものではありません。特にサンプル数が少ないうちは誤差が大きくなります。パチスロは適切な予算内で、遊技は自己責任・節度をもって楽しみましょう。
+  </div>
+
+  <div class="ad-slot ad-banner">
+    <div class="ad-slot-inner">
+      <span class="ad-slot-label">広告スペース</span>
+      <span class="ad-slot-size">728 x 90</span>
+    </div>
+    <!-- AdSense/other ad network snippet goes here. See README.md "広告の設置について". -->
+  </div>
+
+  <footer>
+    <a href="../../">← スロット設定判別 トップへ</a>
+  </footer>
+
+</main>
+
+<script>
+// per-setting probability — 一撃(1geki.jp)「ファンキージャグラー2」設定差・設定判別要素まとめページの各表より。
+// BIG確率(BB確率)・REG確率(RB確率)は「設定別ボーナス確率」表（公表スペック値）。ブドウ確率は
+// 実機シミュレーションアプリ全設定TOTAL600万ゲームの実戦値。
+// DMMぱちタウンのREG確率（単独当選＋チェリー同時当選）の内訳データと突き合わせたところ、
+// 単独＋同時の合成値が一撃のREG確率（RB確率）と各設定で一致することを確認済み（データの信頼性クロスチェック）。
+const P_BUDOU = [1/5.96, 1/5.92, 1/5.88, 1/5.87, 1/5.79, 1/5.72];
+const P_BIG   = [1/266.4, 1/259.0, 1/256.0, 1/249.2, 1/240.1, 1/219.9];
+const P_REG   = [1/439.8, 1/407.1, 1/366.1, 1/322.8, 1/299.3, 1/262.1];
+
+const numericInputs = [
+  'totalG', 'budouK', 'bigK', 'regK',
+].map((id) => document.getElementById(id));
+const resultBars = document.getElementById('resultBars');
+const summaryEl = document.getElementById('summary');
+
+function logBinomLikelihood(n, k, p) {
+  const pp = Math.min(Math.max(p, 1e-9), 1 - 1e-9);
+  return k * Math.log(pp) + (n - k) * Math.log(1 - pp);
+}
+
+// Blank fields must mean "no data" (skip that channel), not "0 observed" — leaving one
+// k-field blank while 総G数 is filled in should never be silently read as "confirmed zero
+// occurrences in N games", which would badly bias channels with a non-negligible rate
+// (like ブドウ) even when the field was simply left untouched.
+function parseField(el) {
+  const v = el.value.trim();
+  return v === '' ? null : Math.max(0, parseInt(v, 10) || 0);
+}
+
+function render() {
+  const [totalGRaw, budouKRaw, bigKRaw, regKRaw] = numericInputs.map(parseField);
+  const totalG = totalGRaw || 0;
+  const hasNumericEvidence = totalG > 0 && (
+    budouKRaw !== null || bigKRaw !== null || regKRaw !== null
+  );
+
+  const logLikelihoods = [1, 2, 3, 4, 5, 6].map((s) => {
+    const i = s - 1;
+    let l = 0;
+    if (totalG > 0 && budouKRaw !== null) l += logBinomLikelihood(totalG, budouKRaw, P_BUDOU[i]);
+    if (totalG > 0 && bigKRaw !== null) l += logBinomLikelihood(totalG, bigKRaw, P_BIG[i]);
+    if (totalG > 0 && regKRaw !== null) l += logBinomLikelihood(totalG, regKRaw, P_REG[i]);
+    return l;
+  });
+
+  const finiteMax = Math.max(...logLikelihoods);
+  const weights = logLikelihoods.map((v) => Math.exp(v - finiteMax));
+  const total = weights.reduce((a, b) => a + b, 0);
+  const probs = hasNumericEvidence && total > 0
+    ? weights.map((w) => w / total)
+    : [1 / 6, 1 / 6, 1 / 6, 1 / 6, 1 / 6, 1 / 6];
+
+  resultBars.innerHTML = '';
+  probs.forEach((p, i) => {
+    const pct = (p * 100).toFixed(1);
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <div class="num">設定${i + 1}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="pct">${pct}%</div>
+    `;
+    resultBars.appendChild(row);
+  });
+
+  if (!hasNumericEvidence) {
+    summaryEl.innerHTML = 'まだデータがありません。①に総G数とブドウ・BIG・REGの成立回数を入力してください。';
+  } else {
+    const best = probs.indexOf(Math.max(...probs));
+    summaryEl.innerHTML = `現在の最有力候補: <strong>設定${best + 1}</strong>` +
+      '<span class="caveat">※サンプル数（総G数）が少ないうちは誤差が大きくなります。あくまで参考程度の目安です。</span>';
+  }
+}
+
+numericInputs.forEach((el) => el.addEventListener('input', render));
+render();
+</script>
+<style>
+  .fb-fab {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 999;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-size: 22px;
+    line-height: 52px;
+    text-align: center;
+    padding: 0;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+  }
+  .fb-panel {
+    position: fixed;
+    right: 18px;
+    bottom: 82px;
+    z-index: 999;
+    width: min(320px, calc(100vw - 36px));
+    background: var(--card-bg, var(--bg, #fff));
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.22);
+  }
+  .fb-panel h3 { margin: 0 0 8px; font-size: 15px; color: var(--ink); }
+  .fb-panel p { margin: 0 0 10px; font-size: 12px; color: var(--sub); line-height: 1.5; }
+  .fb-panel textarea {
+    width: 100%;
+    min-height: 90px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--bg, #fff);
+    resize: vertical;
+    box-sizing: border-box;
+  }
+  .fb-panel .fb-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+  .fb-panel button.fb-send {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .fb-panel button.fb-send:disabled { opacity: 0.6; cursor: default; }
+  .fb-panel button.fb-close {
+    background: none;
+    border: none;
+    color: var(--sub);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 8px 4px;
+  }
+  .fb-panel .fb-status { margin: 8px 0 0; font-size: 12px; }
+  .fb-panel .fb-status.ok { color: #1a7d3a; }
+  .fb-panel .fb-status.err { color: var(--accent2, #b3161f); }
+</style>
+<button class="fb-fab" id="fbFab" aria-label="ご意見・ご要望を送る" title="ご意見・ご要望">💬</button>
+<div class="fb-panel" id="fbPanel" hidden>
+  <h3>ご意見・ご要望</h3>
+  <p>追加してほしい機種、不具合報告、その他ご意見をお気軽にどうぞ。入力して送信するだけで届きます（メール操作は不要です）。</p>
+  <textarea id="fbText" placeholder="例：〇〇の設定判別ツールも追加してほしいです"></textarea>
+  <input type="text" id="fbHoney" style="position:absolute;left:-9999px" tabindex="-1" autocomplete="off">
+  <p class="fb-status" id="fbStatus" hidden></p>
+  <div class="fb-actions">
+    <button type="button" class="fb-close" id="fbClose">閉じる</button>
+    <button type="button" class="fb-send" id="fbSend">送信</button>
+  </div>
+</div>
+<script>
+(function () {
+  var fab = document.getElementById('fbFab');
+  var panel = document.getElementById('fbPanel');
+  var closeBtn = document.getElementById('fbClose');
+  var sendBtn = document.getElementById('fbSend');
+  var textEl = document.getElementById('fbText');
+  var honeyEl = document.getElementById('fbHoney');
+  var statusEl = document.getElementById('fbStatus');
+  if (!fab || !panel || !sendBtn || !textEl) return;
+  fab.addEventListener('click', function () {
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) textEl.focus();
+  });
+  closeBtn.addEventListener('click', function () { panel.hidden = true; });
+  sendBtn.addEventListener('click', function () {
+    var msg = (textEl.value || '').trim();
+    if (!msg) { textEl.focus(); return; }
+    if (honeyEl && honeyEl.value) { return; }
+    var addr = ['haruyuki.koyama.0312', 'gmail.com'].join('@');
+    sendBtn.disabled = true;
+    sendBtn.textContent = '送信中...';
+    statusEl.hidden = true;
+    fetch('https://formsubmit.co/ajax/' + addr, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        message: msg,
+        page: location.href,
+        _subject: '【スロット設定判別】ご意見・ご要望',
+        _template: 'box'
+      })
+    }).then(function (res) {
+      if (!res.ok) throw new Error('bad status');
+      return res.json();
+    }).then(function () {
+      statusEl.textContent = '送信しました。ありがとうございます！';
+      statusEl.className = 'fb-status ok';
+      statusEl.hidden = false;
+      textEl.value = '';
+    }).catch(function () {
+      statusEl.textContent = '送信に失敗しました。時間をおいて再度お試しください。';
+      statusEl.className = 'fb-status err';
+      statusEl.hidden = false;
+    }).finally(function () {
+      sendBtn.disabled = false;
+      sendBtn.textContent = '送信';
+    });
+  });
+})();
+</script>
+</body>
+</html>
