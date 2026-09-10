@@ -493,5 +493,102 @@ function render() {
 numericInputs.forEach((el) => el.addEventListener('input', render));
 render();
 </script>
+<style>
+  .fb-fab {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 999;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-size: 22px;
+    line-height: 52px;
+    text-align: center;
+    padding: 0;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+  }
+  .fb-panel {
+    position: fixed;
+    right: 18px;
+    bottom: 82px;
+    z-index: 999;
+    width: min(320px, calc(100vw - 36px));
+    background: var(--card-bg, var(--bg, #fff));
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.22);
+  }
+  .fb-panel h3 { margin: 0 0 8px; font-size: 15px; color: var(--ink); }
+  .fb-panel p { margin: 0 0 10px; font-size: 12px; color: var(--sub); line-height: 1.5; }
+  .fb-panel textarea {
+    width: 100%;
+    min-height: 90px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--bg, #fff);
+    resize: vertical;
+    box-sizing: border-box;
+  }
+  .fb-panel .fb-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+  .fb-panel button.fb-send {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .fb-panel button.fb-close {
+    background: none;
+    border: none;
+    color: var(--sub);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 8px 4px;
+  }
+</style>
+<button class="fb-fab" id="fbFab" aria-label="ご意見・ご要望を送る" title="ご意見・ご要望">💬</button>
+<div class="fb-panel" id="fbPanel" hidden>
+  <h3>ご意見・ご要望</h3>
+  <p>追加してほしい機種、不具合報告、その他ご意見をお気軽にどうぞ。送信を押すとお使いのメールソフトが起動します。</p>
+  <textarea id="fbText" placeholder="例：〇〇の設定判別ツールも追加してほしいです"></textarea>
+  <div class="fb-actions">
+    <button type="button" class="fb-close" id="fbClose">閉じる</button>
+    <button type="button" class="fb-send" id="fbSend">メールで送信</button>
+  </div>
+</div>
+<script>
+(function () {
+  var fab = document.getElementById('fbFab');
+  var panel = document.getElementById('fbPanel');
+  var closeBtn = document.getElementById('fbClose');
+  var sendBtn = document.getElementById('fbSend');
+  var textEl = document.getElementById('fbText');
+  if (!fab || !panel || !sendBtn || !textEl) return;
+  fab.addEventListener('click', function () {
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) textEl.focus();
+  });
+  closeBtn.addEventListener('click', function () { panel.hidden = true; });
+  sendBtn.addEventListener('click', function () {
+    var addr = ['haruyuki.koyama.0312', 'gmail.com'].join('@');
+    var subject = encodeURIComponent('【スロット設定判別】ご意見・ご要望');
+    var body = encodeURIComponent((textEl.value || '') + '\n\n---\nページ: ' + location.href);
+    window.location.href = 'mailto:' + addr + '?subject=' + subject + '&body=' + body;
+  });
+})();
+</script>
 </body>
 </html>
