@@ -531,6 +531,7 @@ render();
     font-weight: 700;
     cursor: pointer;
   }
+  .fb-panel button.fb-send:disabled { opacity: 0.6; cursor: default; }
   .fb-panel button.fb-close {
     background: none;
     border: none;
@@ -539,15 +540,20 @@ render();
     cursor: pointer;
     padding: 8px 4px;
   }
+  .fb-panel .fb-status { margin: 8px 0 0; font-size: 12px; }
+  .fb-panel .fb-status.ok { color: #1a7d3a; }
+  .fb-panel .fb-status.err { color: var(--accent2, #b3161f); }
 </style>
 <button class="fb-fab" id="fbFab" aria-label="ご意見・ご要望を送る" title="ご意見・ご要望">💬</button>
 <div class="fb-panel" id="fbPanel" hidden>
   <h3>ご意見・ご要望</h3>
-  <p>追加してほしい機種、不具合報告、その他ご意見をお気軽にどうぞ。送信を押すとお使いのメールソフトが起動します。</p>
+  <p>追加してほしい機種、不具合報告、その他ご意見をお気軽にどうぞ。入力して送信するだけで届きます（メール操作は不要です）。</p>
   <textarea id="fbText" placeholder="例：〇〇の設定判別ツールも追加してほしいです"></textarea>
+  <input type="text" id="fbHoney" style="position:absolute;left:-9999px" tabindex="-1" autocomplete="off">
+  <p class="fb-status" id="fbStatus" hidden></p>
   <div class="fb-actions">
     <button type="button" class="fb-close" id="fbClose">閉じる</button>
-    <button type="button" class="fb-send" id="fbSend">メールで送信</button>
+    <button type="button" class="fb-send" id="fbSend">送信</button>
   </div>
 </div>
 <script>
@@ -557,6 +563,8 @@ render();
   var closeBtn = document.getElementById('fbClose');
   var sendBtn = document.getElementById('fbSend');
   var textEl = document.getElementById('fbText');
+  var honeyEl = document.getElementById('fbHoney');
+  var statusEl = document.getElementById('fbStatus');
   if (!fab || !panel || !sendBtn || !textEl) return;
   fab.addEventListener('click', function () {
     panel.hidden = !panel.hidden;
@@ -564,10 +572,38 @@ render();
   });
   closeBtn.addEventListener('click', function () { panel.hidden = true; });
   sendBtn.addEventListener('click', function () {
+    var msg = (textEl.value || '').trim();
+    if (!msg) { textEl.focus(); return; }
+    if (honeyEl && honeyEl.value) { return; }
     var addr = ['haruyuki.koyama.0312', 'gmail.com'].join('@');
-    var subject = encodeURIComponent('【スロット設定判別】ご意見・ご要望');
-    var body = encodeURIComponent((textEl.value || '') + '\n\n---\nページ: ' + location.href);
-    window.location.href = 'mailto:' + addr + '?subject=' + subject + '&body=' + body;
+    sendBtn.disabled = true;
+    sendBtn.textContent = '送信中...';
+    statusEl.hidden = true;
+    fetch('https://formsubmit.co/ajax/' + addr, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        message: msg,
+        page: location.href,
+        _subject: '【スロット設定判別】ご意見・ご要望',
+        _template: 'box'
+      })
+    }).then(function (res) {
+      if (!res.ok) throw new Error('bad status');
+      return res.json();
+    }).then(function () {
+      statusEl.textContent = '送信しました。ありがとうございます！';
+      statusEl.className = 'fb-status ok';
+      statusEl.hidden = false;
+      textEl.value = '';
+    }).catch(function () {
+      statusEl.textContent = '送信に失敗しました。時間をおいて再度お試しください。';
+      statusEl.className = 'fb-status err';
+      statusEl.hidden = false;
+    }).finally(function () {
+      sendBtn.disabled = false;
+      sendBtn.textContent = '送信';
+    });
   });
 })();
 </script>
