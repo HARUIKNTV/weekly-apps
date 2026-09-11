@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7523687500134096" crossorigin="anonymous"></script>
+<title>スマスロキン肉マン～7人の悪魔超人編～ 設定判別ツール</title>
+<meta name="description" content="スマスロ「キン肉マン～7人の悪魔超人編～」の設定判別ツール。AT初当り確率の数値データと、メニュー画面キャラクター・ケロットトロフィー・超人パワー上乗せ表示（＋456／＋666）などDMMぱちタウンの設定判別・推測ポイントに基づく示唆演出の出現回数から設定期待度を算出します。" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg2: #f4f4f5;
+    --card: #ffffff;
+    --line: #e4e4e7;
+    --ink: #18181b;
+    --sub: #6b6b70;
+    --accent: #d6202c;
+    --accent2: #b3161f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Zen Kaku Gothic New', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  a { color: var(--accent2); }
+  main { max-width: 780px; margin: 0 auto; padding: 24px 16px 48px; }
+
+  header { text-align: center; margin-bottom: 18px; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+    border-radius: 999px;
+    padding: 3px 12px;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: clamp(22px, 5vw, 30px);
+    font-weight: 900;
+    margin: 0 0 6px;
+    letter-spacing: 0.02em;
+  }
+  header p { color: var(--sub); font-size: 13px; margin: 0; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .card h2 {
+    font-size: 15px;
+    margin: 0 0 3px;
+  }
+  .card .hint { color: var(--sub); font-size: 12px; margin: 0 0 10px; }
+
+  .field-group-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 12px 0 6px;
+  }
+  .field-group-label:first-of-type { margin-top: 0; }
+  .field-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  label.field { display: block; font-size: 12.5px; color: var(--sub); }
+  label.field input {
+    display: block;
+    width: 100%;
+    margin-top: 5px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--ink);
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+  label.field input:focus { outline: 2px solid var(--accent2); outline-offset: 1px; }
+
+  .subhead {
+    font-size: 11.5px;
+    color: var(--sub);
+    margin: 0 0 8px;
+  }
+  .subhead b { color: var(--accent2); font-weight: 700; }
+
+  .cat-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 10px 0 5px;
+  }
+  .cat-label:first-of-type { margin-top: 0; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2px; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 4px 3px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .chip.active { border-color: var(--accent2); }
+  .chip .label { max-width: 210px; overflow: hidden; text-overflow: ellipsis; }
+  .chip .impl { font-size: 10.5px; margin-left: 2px; }
+  .chip .impl.hard { color: var(--accent2); }
+  .chip .impl.soft { color: var(--sub); font-style: italic; }
+  .chip button {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+  }
+  .chip button:active { background: var(--accent); border-color: var(--accent); }
+  .chip .count {
+    min-width: 14px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .result-bars { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
+  .bar-row { display: grid; grid-template-columns: 48px 1fr 52px; align-items: center; gap: 8px; }
+  .bar-row .num { font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .bar-track {
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    height: 16px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 999px;
+    transition: width 0.25s ease;
+  }
+  .bar-fill.excluded { background: #e4e4e7; }
+  .bar-row .pct { text-align: right; font-variant-numeric: tabular-nums; font-size: 12px; color: var(--sub); }
+
+  .summary {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--bg2);
+    border-left: 3px solid var(--accent2);
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .summary strong { color: var(--accent2); }
+  .summary .caveat { display: block; margin-top: 4px; color: var(--sub); font-size: 11px; }
+
+  .source {
+    font-size: 11.5px;
+    color: var(--sub);
+    text-align: center;
+    margin-top: 18px;
+  }
+  .disclaimer {
+    font-size: 11px;
+    color: var(--sub);
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-top: 14px;
+  }
+  footer { text-align: center; margin-top: 18px; font-size: 12px; }
+  footer a { color: var(--sub); }
+
+  .ad-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: repeating-linear-gradient(45deg, #f4f4f5, #f4f4f5 10px, #ececef 10px, #ececef 20px);
+    border: 2px dashed var(--line);
+    border-radius: 14px;
+    color: var(--sub);
+    margin: 0 auto 14px;
+  }
+  .ad-slot-inner { text-align: center; }
+  .ad-slot-label { display: block; font-size: 12px; letter-spacing: 0.1em; }
+  .ad-slot-size { display: block; font-size: 10.5px; opacity: 0.7; }
+  .ad-banner { max-width: 728px; height: 90px; }
+  .ad-rect { max-width: 300px; height: 250px; }
+</style>
+</head>
+<body>
+<main>
+
+  <header>
+    <span class="eyebrow">設定判別ツール</span>
+    <h1>💪 スマスロ「キン肉マン～7人の悪魔超人編～」設定判別</h1>
+    <p>数値データと示唆演出の出現回数から設定期待度を算出します。</p>
+  </header>
+
+  <div class="ad-slot ad-banner">
+    <div class="ad-slot-inner">
+      <span class="ad-slot-label">広告スペース</span>
+      <span class="ad-slot-size">728 x 90</span>
+    </div>
+    <!-- AdSense/other ad network snippet goes here. See README.md "広告の設置について". -->
+  </div>
+
+  <div class="card">
+    <h2>① 数値データ</h2>
+    <p class="hint">この機種は設定3が存在しない5段階設定（設定1・2・4・5・6）です。わかる範囲で入力するほど精度が上がります。空欄の項目は計算に影響しません。</p>
+
+    <div class="field-group-label">AT初当り確率</div>
+    <div class="field-row">
+      <label class="field">総G数
+        <input type="number" id="totalG" min="0" placeholder="例: 2000" />
+      </label>
+      <label class="field">AT当選回数
+        <input type="number" id="atInitialK" min="0" placeholder="例: 5" />
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>② 判別要素</h2>
+    <p class="subhead">出現したら<b>タップして＋</b>。金文字の「濃厚/否定」は候補を確定・除外し、斜体の「示唆」はあくまで参考程度の重みだけを加えます（確定情報ではありません）。</p>
+    <div id="itemChips"></div>
+  </div>
+
+  <div class="ad-slot ad-rect" style="margin: 0 auto 14px;">
+    <div class="ad-slot-inner">
+      <span class="ad-slot-label">広告スペース</span>
+      <span class="ad-slot-size">300 x 250</span>
+    </div>
+    <!-- AdSense/other ad network snippet goes here. See README.md "広告の設置について". -->
+  </div>
+
+  <div class="card">
+    <h2>③ 結果</h2>
+    <div class="result-bars" id="resultBars"></div>
+    <div class="summary" id="summary"></div>
+  </div>
+
+  <p class="source">
+    参考データ: <a href="https://p-town.dmm.com/machines/4378#anc-point" target="_blank" rel="noopener">DMMぱちタウン「スマスロキン肉マン～7人の悪魔超人編～」設定判別・推測ポイント</a>（2026/09/11参照）／
+    <a href="https://1geki.jp/slot/l_niku7devil/0/" target="_blank" rel="noopener">一撃「キン肉マン（スマスロ）」設定差・設定判別要素まとめ</a>（2026/09/11参照）
+  </p>
+
+  <div class="disclaimer">
+    ※本ツールは公開されている設定差データをもとにした期待値の目安を計算するファンメイド計算機であり、実際の設定を保証するものではありません。特に「示唆」にとどまる要素はあくまで可能性の参考程度で、確定情報ではありません。パチスロは適切な予算内で、遊技は自己責任・節度をもって楽しみましょう。
+  </div>
+
+  <div class="ad-slot ad-banner">
+    <div class="ad-slot-inner">
+      <span class="ad-slot-label">広告スペース</span>
+      <span class="ad-slot-size">728 x 90</span>
+    </div>
+    <!-- AdSense/other ad network snippet goes here. See README.md "広告の設置について". -->
+  </div>
+
+  <footer>
+    <a href="../../">← スロット設定判別 トップへ</a>
+  </footer>
+
+</main>
+
+<script>
+// この機種は設定3が存在しない5段階設定 — DMMぱちタウン「設定判別・推測ポイント」も
+// 一撃の設定差ページもともに設定1・2・4・5・6の5列で構成されている
+const SETTINGS = [1, 2, 4, 5, 6];
+const P_AT_INITIAL = { 1: 1 / 404.1, 2: 1 / 400.6, 4: 1 / 362.1, 5: 1 / 350.7, 6: 1 / 336.5 }; // AT初当り確率
+
+// 判別要素 — DMMぱちタウン「設定差はこれを見ればOK」等の分類順（メニュー画面キャラ→ケロットトロフィー→
+// 超人パワー上乗せ表示→エンディングボイス）をそのまま保持。
+// kind:'hard' は1回でも出現すれば矛盾設定をハード除外（type:'only'|'deny'）。
+// kind:'soft' は確定情報ではない「示唆」のみの要素で、ハード除外はせず tier（弱/通常/強）に応じた重みを加えるだけ。
+const ITEMS = [
+  { cat: 'メニュー画面キャラクター（150万パワー以降）', label: 'わたしはレフェリー', impl: '4以上濃厚', kind: 'hard', type: 'only', settings: [4, 5, 6] },
+  { cat: 'メニュー画面キャラクター（150万パワー以降）', label: 'ナツコさん', impl: '2以上濃厚', kind: 'hard', type: 'only', settings: [2, 4, 5, 6] },
+  { cat: 'メニュー画面キャラクター（150万パワー以降）', label: 'ロビンマスク', impl: '偶数示唆', kind: 'soft', tier: 'normal', settings: [2, 4, 6] },
+  { cat: 'メニュー画面キャラクター（150万パワー以降）', label: 'テリーマン', impl: '高設定示唆[強]', kind: 'soft', tier: 'strong', settings: [4, 5, 6] },
+
+  { cat: 'ケロットトロフィー（AT終了画面）', label: 'トロフィー出現', impl: '2以上濃厚', kind: 'hard', type: 'only', settings: [2, 4, 5, 6] },
+  { cat: 'ケロットトロフィー（AT終了画面）', label: '金トロフィー', impl: '4以上濃厚', kind: 'hard', type: 'only', settings: [4, 5, 6] },
+  { cat: 'ケロットトロフィー（AT終了画面）', label: 'ケロット柄トロフィー', impl: '5以上濃厚', kind: 'hard', type: 'only', settings: [5, 6] },
+  { cat: 'ケロットトロフィー（AT終了画面）', label: '虹トロフィー', impl: '6濃厚', kind: 'hard', type: 'only', settings: [6] },
+
+  { cat: '正義超人チャレンジ中の超人パワー上乗せ表示', label: '＋456パワー', impl: '4以上濃厚', kind: 'hard', type: 'only', settings: [4, 5, 6] },
+  { cat: '正義超人チャレンジ中の超人パワー上乗せ表示', label: '＋666パワー', impl: '6濃厚', kind: 'hard', type: 'only', settings: [6] },
+
+  { cat: 'エンディング中のレア役成立時キャラボイス', label: '「ビビンバ」ボイス', impl: '4以上濃厚', kind: 'hard', type: 'only', settings: [4, 5, 6] },
+];
+const TIER_WEIGHT = { weak: 0.2, normal: 0.35, strong: 0.5 }; // 示唆1回出現あたりの重み（対数尤度換算）。あくまで参考程度に抑えるための小さめの値
+const SOFT_CAP = 3; // 同じ示唆を何度数えても、影響はこの回数分でカンスト
+
+const numericInputs = ['totalG', 'atInitialK'].map((id) => document.getElementById(id));
+const resultBars = document.getElementById('resultBars');
+const summaryEl = document.getElementById('summary');
+
+function buildChips(container, items) {
+  let lastCat = null;
+  let rowEl = null;
+  items.forEach((item) => {
+    item.count = 0;
+    if (item.cat !== lastCat) {
+      const catLabel = document.createElement('div');
+      catLabel.className = 'cat-label';
+      catLabel.textContent = item.cat;
+      container.appendChild(catLabel);
+      rowEl = document.createElement('div');
+      rowEl.className = 'chip-row';
+      container.appendChild(rowEl);
+      lastCat = item.cat;
+    }
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.innerHTML = `
+      <button type="button" class="dec" aria-label="減らす">－</button>
+      <span class="label">${item.label}</span>
+      <span class="impl ${item.kind}">${item.impl}</span>
+      <span class="count">0</span>
+      <button type="button" class="inc" aria-label="増やす">＋</button>
+    `;
+    const countEl = chip.querySelector('.count');
+    chip.querySelector('.inc').addEventListener('click', () => {
+      item.count += 1;
+      countEl.textContent = item.count;
+      chip.classList.toggle('active', item.count > 0);
+      render();
+    });
+    chip.querySelector('.dec').addEventListener('click', () => {
+      item.count = Math.max(0, item.count - 1);
+      countEl.textContent = item.count;
+      chip.classList.toggle('active', item.count > 0);
+      render();
+    });
+    rowEl.appendChild(chip);
+  });
+}
+buildChips(document.getElementById('itemChips'), ITEMS);
+
+function logBinomLikelihood(n, k, p) {
+  const pp = Math.min(Math.max(p, 1e-9), 1 - 1e-9);
+  return k * Math.log(pp) + (n - k) * Math.log(1 - pp);
+}
+
+// Blank fields must mean "no data" (skip that channel), not "0 observed".
+function parseField(el) {
+  const v = el.value.trim();
+  return v === '' ? null : Math.max(0, parseInt(v, 10) || 0);
+}
+
+function computeCandidateSettings() {
+  let candidates = new Set(SETTINGS);
+  ITEMS.forEach((item) => {
+    if (item.kind !== 'hard' || item.count <= 0) return;
+    if (item.type === 'only') {
+      candidates = new Set([...candidates].filter((s) => item.settings.includes(s)));
+    } else if (item.type === 'deny') {
+      item.settings.forEach((s) => candidates.delete(s));
+    }
+  });
+  return candidates;
+}
+
+function render() {
+  const [totalGRaw, atInitialKRaw] = numericInputs.map(parseField);
+  const totalG = totalGRaw || 0;
+  const candidates = computeCandidateSettings();
+  const hasNumericEvidence = totalG > 0 && atInitialKRaw !== null;
+  const softItems = ITEMS.filter((item) => item.kind === 'soft');
+  const hasSoftEvidence = softItems.some((item) => item.count > 0);
+
+  const logLikelihoods = SETTINGS.map((s) => {
+    if (!candidates.has(s)) return -Infinity;
+    let l = 0;
+    if (totalG > 0 && atInitialKRaw !== null) l += logBinomLikelihood(totalG, atInitialKRaw, P_AT_INITIAL[s]);
+    softItems.forEach((item) => {
+      if (item.count > 0 && item.settings.includes(s)) {
+        l += Math.min(item.count, SOFT_CAP) * TIER_WEIGHT[item.tier];
+      }
+    });
+    return l;
+  });
+
+  const finiteMax = Math.max(...logLikelihoods.filter((v) => Number.isFinite(v)), -Infinity);
+  const weights = logLikelihoods.map((v) => (Number.isFinite(v) ? Math.exp(v - finiteMax) : 0));
+  const total = weights.reduce((a, b) => a + b, 0);
+  const probs = total > 0 ? weights.map((w) => w / total) : SETTINGS.map(() => 0);
+
+  resultBars.innerHTML = '';
+  probs.forEach((p, idx) => {
+    const s = SETTINGS[idx];
+    const pct = (p * 100).toFixed(1);
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <div class="num">設定${s}</div>
+      <div class="bar-track"><div class="bar-fill ${candidates.has(s) ? '' : 'excluded'}" style="width:${pct}%"></div></div>
+      <div class="pct">${candidates.has(s) ? pct + '%' : '除外'}</div>
+    `;
+    resultBars.appendChild(row);
+  });
+
+  const noDataAtAll = candidates.size === SETTINGS.length && !hasNumericEvidence && !hasSoftEvidence;
+  if (candidates.size === 0) {
+    summaryEl.innerHTML = '⚠️ 濃厚・否定要素同士が矛盾しています。カウントを見直してください。';
+  } else if (noDataAtAll) {
+    summaryEl.innerHTML = 'まだデータがありません。①に数値を入力するか、②で出現した演出をカウントしてください。';
+  } else {
+    const best = SETTINGS[probs.indexOf(Math.max(...probs))];
+    const list = [...candidates].sort((a, b) => a - b).join(', ');
+    summaryEl.innerHTML = `現在の候補: <strong>設定${list}</strong>${hasNumericEvidence || hasSoftEvidence ? ` ／ 最有力: <strong>設定${best}</strong>` : ''}` +
+      (hasSoftEvidence ? '<span class="caveat">※斜体で示した「示唆」を反映していますが、あくまで参考程度の重みです。</span>' : '');
+  }
+}
+
+numericInputs.forEach((el) => el.addEventListener('input', render));
+render();
+</script>
+<style>
+  .fb-fab {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 999;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-size: 22px;
+    line-height: 52px;
+    text-align: center;
+    padding: 0;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+  }
+  .fb-panel {
+    position: fixed;
+    right: 18px;
+    bottom: 82px;
+    z-index: 999;
+    width: min(320px, calc(100vw - 36px));
+    background: var(--card-bg, var(--bg, #fff));
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.22);
+  }
+  .fb-panel h3 { margin: 0 0 8px; font-size: 15px; color: var(--ink); }
+  .fb-panel p { margin: 0 0 10px; font-size: 12px; color: var(--sub); line-height: 1.5; }
+  .fb-panel textarea {
+    width: 100%;
+    min-height: 90px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--bg, #fff);
+    resize: vertical;
+    box-sizing: border-box;
+  }
+  .fb-panel .fb-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+  .fb-panel button.fb-send {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .fb-panel button.fb-send:disabled { opacity: 0.6; cursor: default; }
+  .fb-panel button.fb-close {
+    background: none;
+    border: none;
+    color: var(--sub);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 8px 4px;
+  }
+  .fb-panel .fb-status { margin: 8px 0 0; font-size: 12px; }
+  .fb-panel .fb-status.ok { color: #1a7d3a; }
+  .fb-panel .fb-status.err { color: var(--accent2, #b3161f); }
+</style>
+<button class="fb-fab" id="fbFab" aria-label="ご意見・ご要望を送る" title="ご意見・ご要望">💬</button>
+<div class="fb-panel" id="fbPanel" hidden>
+  <h3>ご意見・ご要望</h3>
+  <p>追加してほしい機種、不具合報告、その他ご意見をお気軽にどうぞ。入力して送信するだけで届きます（メール操作は不要です）。</p>
+  <textarea id="fbText" placeholder="例：〇〇の設定判別ツールも追加してほしいです"></textarea>
+  <input type="text" id="fbHoney" style="position:absolute;left:-9999px" tabindex="-1" autocomplete="off">
+  <p class="fb-status" id="fbStatus" hidden></p>
+  <div class="fb-actions">
+    <button type="button" class="fb-close" id="fbClose">閉じる</button>
+    <button type="button" class="fb-send" id="fbSend">送信</button>
+  </div>
+</div>
+<script>
+(function () {
+  var fab = document.getElementById('fbFab');
+  var panel = document.getElementById('fbPanel');
+  var closeBtn = document.getElementById('fbClose');
+  var sendBtn = document.getElementById('fbSend');
+  var textEl = document.getElementById('fbText');
+  var honeyEl = document.getElementById('fbHoney');
+  var statusEl = document.getElementById('fbStatus');
+  if (!fab || !panel || !sendBtn || !textEl) return;
+  fab.addEventListener('click', function () {
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) textEl.focus();
+  });
+  closeBtn.addEventListener('click', function () { panel.hidden = true; });
+  sendBtn.addEventListener('click', function () {
+    var msg = (textEl.value || '').trim();
+    if (!msg) { textEl.focus(); return; }
+    if (honeyEl && honeyEl.value) { return; }
+    var addr = ['haruyuki.koyama.0312', 'gmail.com'].join('@');
+    sendBtn.disabled = true;
+    sendBtn.textContent = '送信中...';
+    statusEl.hidden = true;
+    fetch('https://formsubmit.co/ajax/' + addr, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        message: msg,
+        page: location.href,
+        _subject: '【スロット設定判別】ご意見・ご要望',
+        _template: 'box'
+      })
+    }).then(function (res) {
+      if (!res.ok) throw new Error('bad status');
+      return res.json();
+    }).then(function () {
+      statusEl.textContent = '送信しました。ありがとうございます！';
+      statusEl.className = 'fb-status ok';
+      statusEl.hidden = false;
+      textEl.value = '';
+    }).catch(function () {
+      statusEl.textContent = '送信に失敗しました。時間をおいて再度お試しください。';
+      statusEl.className = 'fb-status err';
+      statusEl.hidden = false;
+    }).finally(function () {
+      sendBtn.disabled = false;
+      sendBtn.textContent = '送信';
+    });
+  });
+})();
+</script>
+</body>
+</html>
